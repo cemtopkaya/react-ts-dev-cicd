@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  devcontainer:
+    container_name: devcontainer
+    image: telenity/devcontainer/react:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ..:/workspace:cached
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: sleep infinity
+    environment:
+      - PYTHONPATH=/workspace
+    networks:
+      - devnet
+  
+  sonar:
+    container_name: sonar
+    image: sonarqube:community
+    environment:
+      - SONAR_SEARCH_JAVAOPTS=-Xms2g -Xmx4g
+    #   - SONAR_JDBC_URL=jdbc:postgresql://postgres:5432/sonar
+    #   - SONAR_JDBC_USERNAME=sonar
+    #   - SONAR_JDBC_PASSWORD=sonar
+    deploy:
+      resources:
+        limits:
+          # Sonar içinde Elasticsearch ve gömülü bir DB taşıdığı için büyük bir bellek ihtiyacı var
+          memory: 4g
+    ports:
+      - "34000:9000"
+    networks:
+      - devnet
+
+networks:
+  devnet:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.16.3.0/24

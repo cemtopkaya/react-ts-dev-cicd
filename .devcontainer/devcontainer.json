@@ -1,0 +1,57 @@
+{
+  "name": "React diff-cover Container",
+  "dockerComposeFile": [
+    "./docker-compose.yml"
+  ],
+  "service": "devcontainer",
+  "workspaceFolder": "/workspace",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "dsznajder.es7-react-js-snippets",
+        "vitest.explorer",
+        "ritwickdey.LiveServer",
+        "MS-vsliveshare.vsliveshare",
+        "SonarSource.sonarlint-vscode",
+        "ms-playwright.playwright",
+        "ms-azuretools.vscode-docker"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "sonarlint.ls.javaHome": "/usr/lib/jvm/java-17-openjdk-arm64",
+        // To analyze JavaScript, TypeScript, or CSS code, SonarQube for VS Code requires Node.js executable.
+        "sonarlint.pathToNodeExecutable": "/usr/local/bin/node",
+        // To analyze JavaScript, TypeScript, or CSS code, SonarLint for VS Code requires Node.js executable.
+        // src dışındaki tüm dosyaları hariç tutar
+        "sonarlint.analysisExcludesStandalone": "**/node_modules/**,**/.env,**/dist/**,**/tests/**,**/*.*",
+        "sonarlint.analyzerProperties": {
+          "sonar.sources": "src"
+        },
+        "sonarlint.trace.server": "off",
+        "sonarlint.output.showVerboseLogs": false,
+        "sonarlint.output.showAnalyzerLogs": false,
+        "sonarlint.connectedMode.connections.sonarqube": [
+          {
+            "serverUrl": "http://sonar:9000",
+            "connectionId": "sonar_container",
+            "disableNotifications": false
+          }
+        ],
+        "sonarlint.connectedMode.project": {
+          "projectKey": "newcode-ts",
+          "connectionId": "sonar_container"
+        }
+      }
+    },
+    // "postCreateCommand": "npm install",
+    // npm create vite@latest react-ts-tdd -- --template react-ts
+    // npm install -D vitest @testing-library/react @testing-library/jest-dom jsdom @types/jsdom
+    // Forwards port 5173 for Vite development server.
+    "forwardPorts": [
+      5173
+    ]
+  }
+}
