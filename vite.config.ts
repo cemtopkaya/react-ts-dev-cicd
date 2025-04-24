@@ -30,17 +30,6 @@ export default defineConfig({
   optimizeDeps: {
     include: ['@testing-library/react', '@testing-library/jest-dom'], // Geliştirme sırasında optimize edilecek bağımlılıkları belirtir
   },
-  // --- TEST AYARLARI ---
-  // Vitest için test ayarları
-  // https://vitest.dev/guide/configuration.html
-  // https://vitest.dev/guide/browser/playwright
-  // https://vitest.dev/guide/browser/playwright.html#configuration
-  test: {
-    environment: 'jsdom',
-    globals: true,
-    // Test başlamadan önce çalışacak kodlar, ayarlar, mocklar
-    setupFiles: './vitest.setup.ts',
-  },
   server: {
     host: true,
     open: true,

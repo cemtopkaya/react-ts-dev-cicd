@@ -16,6 +16,8 @@ dist-ssr
 # bu dosyaların git'e eklenmesi gerekiyor.
 # *.local
 
+coverage
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
