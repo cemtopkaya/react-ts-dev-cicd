@@ -90,8 +90,9 @@ export default defineConfig({
       reporter: [
         ["lcov", { projectRoot: "./src" }],
         ["json", { file: "coverage.json" }],
-        ["text"],
-        ["text-summary"],    // Add a summary reporter for clearer terminal output
+        ["html"], // Add an HTML reporter for detailed coverage reports
+        ["text"], // Add a text reporter for terminal output
+        ["text-summary"], // Add a summary reporter for clearer terminal output
       ],
       // Whether to include all files, including the untested ones into report.
       // Changed to true to include all src files in coverage report
