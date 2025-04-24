@@ -1,0 +1,4 @@
+{
+    "sonarQubeUri": "http://sonar:9000",
+    "projectKey": "cem"
+}
