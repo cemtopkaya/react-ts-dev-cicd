@@ -10,6 +10,10 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+# Normalde *.local dosyaları git'e eklenmez. Örneğin: .env.local dosyası
+# .env.local dosyası genellikle kişisel ayarları içerir ve bu nedenle
+# genellikle git'e eklenmez. Ancak bu proje bir eğitim projesi olduğu için
+# bu dosyaların git'e eklenmesi gerekiyor.
 # *.local
 
 # Editor directories and files
