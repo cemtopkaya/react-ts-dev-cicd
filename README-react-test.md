@@ -84,13 +84,16 @@ Belirli bir dizindeki testleri sürekli koşar:
 "test:dir": "npx vitest --ui --api.host=0.0.0.0 --api.port=8999 --dir src/components --coverage=false",
 ```
 
-
-
-
 HTML formatında birim test sonuç raporu üretmesi için:
 
 ```json
-"test:html": "npx vitest run --coverage --reporter=html --config ./vitest.config.ts --outputFile=test-results/unit/html/output.html"
+"test:html": "npx vitest --run --coverage --reporter=html --config ./vitest.config.ts --outputFile=test-results/unit/html/output.html"
+```
+
+JSON formatında birim test sonuç raporu üretmesi için:
+
+```json
+"test:json": "npx vitest --run --coverage --reporter=json --outputFile=test-results/unit/json/output.json"
 ```
 
 ### Test Ortamı Kurulumu
