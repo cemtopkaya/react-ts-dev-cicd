@@ -123,7 +123,6 @@ export default defineConfig({
       reportOnFailure: true,
       // Do not show files with 100% statement, branch, and function coverage.
       skipFull: false,
-    },
-    ui: true
+    }
   },
 });

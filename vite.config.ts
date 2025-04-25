@@ -25,15 +25,22 @@ export default defineConfig({
     },
   },
   define: {
-    'process.env': process.env, // Node.js ortam değişkenlerini tanımlar
+    // 'process.env': process.env, // Node.js ortam değişkenlerini tanımlar
   },
   optimizeDeps: {
     include: ['@testing-library/react', '@testing-library/jest-dom'], // Geliştirme sırasında optimize edilecek bağımlılıkları belirtir
   },
   server: {
     host: "0.0.0.0",
-    open: true,
-    port: 3000,
+    port: 3300,
+    strictPort: true,
+    open: true
+  },
+  preview: {
+    host: "0.0.0.0",
+    port: 6600,
+    strictPort: true,
+    open: true
   },
   build: {
     outDir: 'dist', // Çıktı dizini
