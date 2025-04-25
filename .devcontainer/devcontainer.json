@@ -16,7 +16,8 @@
         "MS-vsliveshare.vsliveshare",
         "SonarSource.sonarlint-vscode",
         "ms-playwright.playwright",
-        "ms-azuretools.vscode-docker"
+        "ms-azuretools.vscode-docker",
+        "mushan.vscode-paste-image"
       ],
       "settings": {
         "terminal.integrated.defaultProfile.linux": "bash",

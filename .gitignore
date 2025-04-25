@@ -17,6 +17,8 @@ dist-ssr
 # *.local
 
 coverage
+test-results
+html
 
 # Editor directories and files
 .vscode/*
