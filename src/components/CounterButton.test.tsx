@@ -3,41 +3,29 @@ import { describe, it, expect } from "vitest";
 import { CounterButton } from "./CounterButton";
 
 describe("CounterButton", () => {
-
-  it("renders with initial count", () => {
+  it("initially renders with count 0", () => {
     render(<CounterButton />);
     expect(screen.getByRole("button")).toHaveTextContent("count is 0");
   });
 
-  it('sıfırdan başlarken özel davranış çalışmalı', () => {
-    const { getByText } = render(<CounterButton />)
-    const button = getByText(/count is 0/i)
-  
-    fireEvent.click(button)
-    expect(getByText(/count is 42/i)).toBeTruthy()
-  })
-
-  it("increments only by 1 when count is even (0)", () => {
+  it("sets count to 42 when initial count is 0", () => {
     render(<CounterButton />);
     const button = screen.getByRole("button");
-    // count is 0 (even)
     fireEvent.click(button);
-    expect(button).toHaveTextContent("count is 1");
+    expect(button).toHaveTextContent("count is 42");
   });
 
-  // Bu testi es geçerek branch coverage'ı %50'ye düşürüyoruz
-  it.skip("increments count by 2 when count is odd (else block)", () => {
+  it("increments by 1 when count is even (not 0)", () => {
     render(<CounterButton />);
     const button = screen.getByRole("button");
-
-    // First click: count is 0 (even), goes to 1 (if block)
+    
+    // İlk tıklama: 0 → 42
     fireEvent.click(button);
-
-    // Second click: count is 1 (odd), should increment by 2 (else block)
+    // Manuel olarak sayacı 2 yapalım
+    fireEvent.click(button); // 42 → 43
+    fireEvent.click(button); // 43 → 45
+    // Şimdi 45 → 47 olacak (tek sayı testi)
     fireEvent.click(button);
-
-    expect(button.textContent).toBe("count is 3");
+    expect(button).toHaveTextContent("count is 47");
   });
-
 });
-

@@ -1,22 +1,24 @@
-import { useState } from 'react'
+import { useState } from "react";
 
 export function CounterButton() {
-  const [count, setCount] = useState(0)
+  const [count, setCount] = useState(0);
+
+  const handleClick = () => {
+    if (count === 0) {
+      console.log("ilk tıklama (sıfır)");
+      setCount(42);
+    } else if (count % 2 === 0) {
+      console.log("çift sayi");
+      setCount(count + 1);
+    } else {
+      console.log("tek sayi");
+      setCount(count + 2);
+    }
+  };
 
   return (
-    <button onClick={() => {
-      if (count === 0) {
-        setCount(42) // sıfırsa özel bir değer
-        console.log("ilk tıklama")
-      } else if (count % 2 === 0) {
-        setCount(count + 1)
-        console.log("çift sayi")
-      } else {
-        setCount(count + 2)
-        console.log("tek sayi")
-      }
-    }}>
+    <button onClick={handleClick}>
       count is {count}
     </button>
-  )
+  );
 }
