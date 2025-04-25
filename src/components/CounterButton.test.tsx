@@ -9,6 +9,14 @@ describe("CounterButton", () => {
     expect(screen.getByRole("button")).toHaveTextContent("count is 0");
   });
 
+  it('sıfırdan başlarken özel davranış çalışmalı', () => {
+    const { getByText } = render(<CounterButton />)
+    const button = getByText(/count is 0/i)
+  
+    fireEvent.click(button)
+    expect(getByText(/count is 42/i)).toBeTruthy()
+  })
+
   it("increments only by 1 when count is even (0)", () => {
     render(<CounterButton />);
     const button = screen.getByRole("button");
