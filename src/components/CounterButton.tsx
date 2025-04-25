@@ -7,10 +7,10 @@ export function CounterButton() {
     <button onClick={() => {
       if (count % 2 === 0) {
         setCount(count + 1)
-        console.log("çift")
+        console.log("çift sayi")
       } else {
         setCount(count + 2)
-        console.log("tek")
+        console.log("tek sayi")
       }
     }}>
       count is {count}
