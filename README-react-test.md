@@ -11,6 +11,7 @@ Kullanılacak paketlerin rolleri:
 - **@testing-library/jest-dom**: DOM elemanlarını test etmek için ek matcher'lar
 - **jsdom**: Tarayıcı benzeri bir DOM ortamı
 - **@testing-library/user-event**: Kullanıcı etkileşimlerini simüle etmek için
+- **@vitest/reporters**: XML raporunu JUnit formatında çıkaracak
 
 ```sh
 npm install --save-dev \
@@ -20,6 +21,7 @@ npm install --save-dev \
             jsdom \
             @vitest/ui \
             @testing-library/jest-dom \
+            @vitest/reporters \
             @vitest/coverage-istanbul
 ```
 
@@ -39,6 +41,56 @@ export default defineConfig({
     css: true,
   }
 });
+```
+
+### @vitest/ui
+
+Bir UI üzerinde çıktıları görmek istersek `@vitest/ui` paketine ihtiyacımız olacak.
+`@vitest/ui` paketi Vitest test koşucusu için görsel bir arayüz sağlar. Paketinizin bağımlılıkları arasında görünmüyor. Bu paket şu işlevleri sunar:
+
+- Test sonuçlarını görsel olarak izleme
+- Test başarısızlıklarını daha detaylı inceleme
+- Code coverage sonuçlarını interaktif olarak görüntüleme
+- Testleri seçerek çalıştırma imkanı
+- Hot reloading ile canlı test sonuçlarını görebilme
+
+Mevcut projenizde kullanılmıyor, test çalıştırmaları için CLI komutları kullanıyorsunuz. UI'ı kullanmak isterseniz:
+
+```bash
+npm install -D @vitest/ui
+```
+
+Sonra `package.json`'a başlatan betiği ekleyebilirsiniz. Aşağıdaki `package.json` içinde yer alabilecek betikte `--api.port` ve `--api.host` bilgisi eğer konteyner içinde çalıştırıyor ve ana bilgisayardan erişmek isterseniz çok kullanışlı olacaktır:
+
+```json
+"test:ui": "npx vitest --ui --api.host=0.0.0.0 --api.port=9999 "
+```
+
+
+Testi koşsun ve sürekli kodların değişimini takip ederek tüm testleri koşar:
+
+```json
+"test:watch": "npx vitest --watch --ui --api.host=0.0.0.0 --api.port=8999",
+```
+
+Tüm testleri koşar ve sürekli değiştirilen dosyalardan etkilenen testleri çalıştır:
+
+```json
+"test:changed": "npx vitest --ui --api.host=0.0.0.0 --api.port=8999 --changed --coverage=false",
+```
+
+Belirli bir dizindeki testleri sürekli koşar:
+```json
+"test:dir": "npx vitest --ui --api.host=0.0.0.0 --api.port=8999 --dir src/components --coverage=false",
+```
+
+
+
+
+HTML formatında birim test sonuç raporu üretmesi için:
+
+```json
+"test:html": "npx vitest run --coverage --reporter=html --config ./vitest.config.ts --outputFile=test-results/unit/html/output.html"
 ```
 
 ### Test Ortamı Kurulumu

@@ -31,8 +31,11 @@ export default defineConfig({
     include: ['@testing-library/react', '@testing-library/jest-dom'], // Geliştirme sırasında optimize edilecek bağımlılıkları belirtir
   },
   server: {
-    host: true,
+    host: "0.0.0.0",
     open: true,
     port: 3000,
-  }
+  },
+  build: {
+    outDir: 'dist', // Çıktı dizini
+  },
 })

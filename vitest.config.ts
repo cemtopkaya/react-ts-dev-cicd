@@ -13,14 +13,31 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   // --- TEST AYARLARI ---
   test: {
-    environment: "jsdom",
     globals: true,
+    environment: "jsdom",
     // Test başlamadan önce çalışacak kodlar, ayarlar, mocklar
     setupFiles: "./vitest.setup.ts",
-
     include: ["src/**/*.{test,spec}.{ts,tsx}"],
     exclude: ["node_modules", "dist"],
+    outputFile: "test-results/unit/html/output.html",
     // Burada özel tsconfig dosyasını belirtebilirsiniz:
+    // https://vitest.dev/guide/reporters
+    reporters: [
+      // "verbose",
+      // ['default', { summary: false }],
+      // // [ "html", { open: "never" } ],
+      // [ "html", { open: "always" } ],
+      // // [ "html", { open: "on-failure" } ],
+      // [ "junit", { outputFile: "test-results/unit/output.xml" } ],
+      // [ "json", { outputFile: "test-results/unit/output.json" } ]
+    ],
+
+    // reporters: ["verbose", "default", "junit", "json", "html"],
+    // outputFile: {
+    //   junit: "test-results/unit/junit/output.xml",
+    //   json: "test-results/unit/json/output.json",
+    //   html: "test-results/unit/html/output.html",
+    // },
     typecheck: {
       tsconfig: "./tsconfig.test.json",
     },
@@ -86,11 +103,11 @@ export default defineConfig({
         perFile: true,
         autoUpdate: false,
       },
-      reportsDirectory: "./coverage",
+      reportsDirectory: "./test-results/coverage",
       reporter: [
         ["lcov", { projectRoot: "." }],
         ["json", { file: "coverage.json" }],
-        ["html"], // Add an HTML reporter for detailed coverage reports
+        ["html", { open: "always", subdir: "test-results/coverage/html" }], // Add an HTML reporter for detailed coverage reports
         ["text"], // Add a text reporter for terminal output
         ["text-summary"], // Add a summary reporter for clearer terminal output
         ["json-summary"], // Add a summary reporter for clearer terminal output
@@ -107,5 +124,6 @@ export default defineConfig({
       // Do not show files with 100% statement, branch, and function coverage.
       skipFull: false,
     },
+    ui: true
   },
 });

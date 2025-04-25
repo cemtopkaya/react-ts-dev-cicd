@@ -6,18 +6,17 @@ export function CounterButton() {
   const handleClick = () => {
     if (count === 0) {
       console.log("ilk tıklama (sıfır)");
-      setCount(99);
+      setCount(count + 1);
       return;
-    }
-
-    if (count % 2 === 0) {
+    } else if (count % 4 === 0) {
       console.log("çift sayi");
+      setCount(count + 2);
+      return;
+    } else {
+      console.log("tek sayi");
       setCount(count + 1);
       return;
     }
-
-    console.log("tek sayi");
-    setCount(count + 2);
   };
 
   return <button onClick={handleClick}>count is {count}</button>;
