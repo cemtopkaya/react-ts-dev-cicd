@@ -6,7 +6,7 @@ export function CounterButton() {
   const handleClick = () => {
     if (count === 0) {
       console.log("ilk tıklama (sıfır)");
-      setCount(42);
+      setCount(99);
     } else if (count % 2 === 0) {
       console.log("çift sayi");
       setCount(count + 1);
