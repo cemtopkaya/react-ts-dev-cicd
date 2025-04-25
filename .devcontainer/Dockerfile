@@ -9,7 +9,10 @@ RUN apt-get update && \
         git \
         curl \
         openjdk-17-jre-headless \
-        docker.io
+        docker.io \
+        pipx
+    
+RUN pipx install diff-cover
 
 # install vite globally (optional)
 RUN npm install -g vite sonarqube-scanner dotenv

@@ -83,7 +83,8 @@ export default defineConfig({
         //   lines: 80,
         //   statements: 80,
         // },
-        perFile: true,
+        // perFile: true,
+        perFile: false,
         autoUpdate: false,
       },
       reportsDirectory: "./coverage",
@@ -93,11 +94,12 @@ export default defineConfig({
         ["html"], // Add an HTML reporter for detailed coverage reports
         ["text"], // Add a text reporter for terminal output
         ["text-summary"], // Add a summary reporter for clearer terminal output
+        ["cobertura", { file: "coverage.xml" }] // Ekleyin: XML formatında rapor
       ],
       // Whether to include all files, including the untested ones into report.
       // Changed to true to include all src files in coverage report
       all: true,
-      // Clean coverage results before running tests
+      // clean: true ayarı, coverage raporlarının her test çalıştırıldığında temizlenmesini sağlar
       clean: true,
       cleanOnRerun: false,
       // Generate coverage report even when tests fail.

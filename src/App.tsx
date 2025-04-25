@@ -8,6 +8,7 @@ console.log("hee1");
 
 function App() {
 
+  console.log("hee2");
   return (
     <>
       <div>
