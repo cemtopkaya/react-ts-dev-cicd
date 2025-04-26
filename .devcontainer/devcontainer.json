@@ -17,7 +17,8 @@
         "SonarSource.sonarlint-vscode",
         "ms-playwright.playwright",
         "ms-azuretools.vscode-docker",
-        "mushan.vscode-paste-image"
+        "mushan.vscode-paste-image",
+        "NicolasVuillamy.vscode-groovy-lint"
       ],
       "settings": {
         "terminal.integrated.defaultProfile.linux": "bash",
