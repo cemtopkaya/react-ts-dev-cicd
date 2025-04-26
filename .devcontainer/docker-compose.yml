@@ -6,7 +6,7 @@ services:
     image: telenity/devcontainer/react:latest
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     volumes:
       - ..:/workspace:cached
       - /var/run/docker.sock:/var/run/docker.sock

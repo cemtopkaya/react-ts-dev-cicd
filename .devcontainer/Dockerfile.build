@@ -1,0 +1,26 @@
+# Node.js-based, Debian-derived build environment for CI/CD
+# This image is based on the official Node.js image and includes a JRE for SonarQube for IDE extension
+# and Docker CLI for building and pushing images.
+
+FROM node:23-slim
+
+# ensure terminal displays Turkish characters correctly when the container starts
+ENV LANG=C.UTF-8
+
+# system update and some useful tools
+# JRE is required for the SonarQube for IDE extension
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y \
+        git \
+        openjdk-17-jre-headless \
+        docker.io
+
+RUN apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# install vite globally (optional)
+RUN npm install -g vite sonarqube-scanner dotenv
+
+# working directory
+WORKDIR /workspace
