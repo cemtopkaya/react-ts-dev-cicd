@@ -1,0 +1,16 @@
+# Build stage
+FROM node:23-slim AS build
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY ./dist .
+RUN npm run build
+
+# Serve stage
+FROM cgr.dev/chainguard/httpd:latest
+
+# ensure terminal displays Turkish characters correctly when the container starts
+ENV LANG=C.UTF-8
+
+COPY --from=build /app/build /usr/local/apache2/htdocs/
+

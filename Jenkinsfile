@@ -44,6 +44,7 @@ pipeline {
             steps {
                 script {
                     sh '''
+                        cd release
                         docker build -t telenity/admin-portal:1.1.1 .
                         docker push telenity/admin-portal:1.1.1
                     '''
