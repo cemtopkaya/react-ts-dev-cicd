@@ -29,14 +29,24 @@ pipeline {
         stage('Run Tests') {
             steps {
                 script {
-                    sh 'npm run '
+                    sh 'npm run test:run:coverage'
                 }
             }
         }
         stage('Coverage Check') {
             steps {
                 script {
-                    sh 'npx diff-cover coverage/lcov.info --compare-branch=main'
+                    sh 'npm run coverage:newcode'
+                }
+            }
+        }
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    sh '''
+                        docker build -t telenity/admin-portal:1.1.1 .
+                        docker push telenity/admin-portal:1.1.1
+                    '''
                 }
             }
         }
