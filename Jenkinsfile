@@ -53,7 +53,11 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    sh 'npm run build'
+                    sh 'pwd'
+                    sh 'ls -al'
+                    dir("${WORKSPACE}") {
+                        sh 'npm run build'
+                    }
                 }
             }
         }
