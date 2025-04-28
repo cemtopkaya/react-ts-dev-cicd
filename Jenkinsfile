@@ -47,8 +47,6 @@ pipeline {
                 script {
                     sh "pwd"
                     sh "ls -alR .."
-                    git branch: "${params.GIT_MAIN_BRANCH}", url: "${params.GIT_URL}"
-                    sh "ls -alR .."
                 }
             }
         }
