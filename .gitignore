@@ -22,6 +22,8 @@ coverage
 test-results
 html
 
+.devcontainer/services/jenkins/volume/jenkins_home/**
+
 # Editor directories and files
 #.vscode/*
 !.vscode/extensions.json

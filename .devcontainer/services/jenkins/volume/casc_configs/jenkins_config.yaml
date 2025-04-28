@@ -1,0 +1,240 @@
+credentials:
+  system:
+    domainCredentials:
+    - credentials:
+      - string:
+          description: "jenkins sonar token"
+          id: "jenkins-sonar"
+          scope: GLOBAL
+          secret: "{AQAAABAAAAAwmHu7qhG8wnIzA9Sji8iPcf5JZBdOpFXRPwGh4cziJh3zm7fhBmEjXMoMR3TyKdEKM7L19TCc37iZEsJ+PYYmDg==}"
+
+jenkins:
+  systemMessage: "Jenkins is ready to use!"
+  # authorizationStrategy:
+  #   loggedInUsersCanDoAnything:
+  #     allowAnonymousRead: false
+  crumbIssuer:
+    standard:
+      excludeClientIPFromCrumb: false
+  disableRememberMe: false
+  labelAtoms:
+  - name: "built-in"
+  - name: "master-jenkins"
+  labelString: "master-jenkins"
+  markupFormatter: "plainText"
+  mode: NORMAL
+  myViewsTabBar: "standard"
+  nodeMonitors:
+  - "architecture"
+  - "clock"
+  - diskSpace:
+      freeSpaceThreshold: "1GiB"
+      freeSpaceWarningThreshold: "2GiB"
+  - "swapSpace"
+  - tmpSpace:
+      freeSpaceThreshold: "1GiB"
+      freeSpaceWarningThreshold: "2GiB"
+  - "responseTime"
+  numExecutors: 2
+  primaryView:
+    all:
+      name: "all"
+  projectNamingStrategy: "standard"
+  quietPeriod: 5
+  scmCheckoutRetryCount: 0
+  securityRealm:
+    local:
+      allowsSignup: false
+      enableCaptcha: false
+      users:
+      - id: "admin"
+        name: "admin"
+        password: admin
+        properties:
+        - "apiToken"
+        - favoriting:
+            autofavoriteEnabled: true
+        - "consoleUrlProvider"
+        - "mailer"
+        - "favorite"
+        - "myView"
+        - preferredProvider:
+            providerId: "default"
+        - "timezone"
+        - "experimentalFlags"
+  slaveAgentPort: 50000
+  updateCenter:
+    sites:
+    - id: "default"
+      url: "https://updates.jenkins.io/update-center.json"
+  views:
+  - all:
+      name: "all"
+  viewsTabBar: "standard"
+globalCredentialsConfiguration:
+  configuration:
+    providerFilter: "none"
+    typeFilter: "none"
+appearance:
+  prism:
+    theme: PRISM
+security:
+  apiToken:
+    creationOfLegacyTokenEnabled: false
+    tokenGenerationOnCreationEnabled: false
+    usageStatisticsEnabled: true
+  cps:
+    hideSandbox: false
+  gitHooks:
+    allowedOnAgents: false
+    allowedOnController: false
+  gitHostKeyVerificationConfiguration:
+    sshHostKeyVerificationStrategy: "knownHostsFileVerificationStrategy"
+  sSHD:
+    port: -1
+  scriptApproval:
+    forceSandbox: false
+unclassified:
+  bitbucketEndpointConfiguration:
+    endpoints:
+    - bitbucketCloudEndpoint:
+        enableCache: false
+        manageHooks: false
+        repositoriesCacheDuration: 0
+        teamCacheDuration: 0
+  buildDiscarders:
+    configuredBuildDiscarders:
+    - "jobBuildDiscarder"
+  buildStepOperation:
+    enabled: false
+  email-ext:
+    adminRequiredForTemplateTesting: false
+    allowUnregisteredEnabled: false
+    charset: "UTF-8"
+    debugMode: false
+    defaultBody: |-
+      $PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS:
+
+      Check console output at $BUILD_URL to view the results.
+    defaultSubject: "$PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS!"
+    defaultTriggerIds:
+    - "hudson.plugins.emailext.plugins.trigger.FailureTrigger"
+    maxAttachmentSize: -1
+    maxAttachmentSizeMb: -1
+    precedenceBulk: false
+    throttlingEnabled: false
+    watchingEnabled: false
+  enrichedSummaryConfig:
+    enrichedSummaryEnabled: false
+    httpClientDelayBetweenRetriesInSeconds: 1
+    httpClientMaxRetries: 3
+    httpClientTimeoutInSeconds: 1
+  fingerprints:
+    fingerprintCleanupDisabled: false
+    storage: "file"
+  gitHubConfiguration:
+    apiRateLimitChecker: ThrottleForNormalize
+  gitHubPluginConfig:
+    hookUrl: "http://localhost:8888/github-webhook/"
+  globalTimeOutConfiguration:
+    operations:
+      - "abortOperation"
+    overwriteable: false
+  injectionConfig:
+    allowUntrusted: false
+    checkForBuildAgentErrors: false
+    enabled: false
+    enforceUrl: false
+    injectCcudExtension: false
+    injectMavenExtension: false
+  junitTestResultStorage:
+    storage: "file"
+  mailer:
+    charset: "UTF-8"
+    useSsl: false
+    useTls: false
+  pollSCM:
+    pollingThreadCount: 10
+  sCMSkipBuildWrapper:
+    skipPattern: ".*\\[ci skip\\].*"
+  scmGit:
+    addGitTagAction: false
+    allowSecondFetch: false
+    createAccountBasedOnEmail: false
+    disableGitToolChooser: false
+    hideCredentials: false
+    showEntireCommitSummaryInChanges: false
+    useExistingAccountWithSameEmail: false
+  separator:
+    globalSectionHeaderStyle: "font-weight: bold;"
+  sonarGlobalConfiguration:
+    buildWrapperEnabled: true
+    installations:
+    - credentialsId: "jenkins-sonar"
+      name: "local-sonar"
+      serverUrl: "http://sonar:9000"
+      triggers:
+        skipScmCause: false
+        skipUpstreamCause: false
+  subversionSCM:
+    workspaceFormat: 8
+  timestamper:
+    allPipelines: false
+    elapsedTimeFormat: "'<b>'HH:mm:ss.S'</b> '"
+    systemTimeFormat: "'<b>'HH:mm:ss'</b> '"
+tool:
+  git:
+    installations:
+    - home: "git"
+      name: "Default"
+  mavenGlobalConfig:
+    globalSettingsProvider: "standard"
+    settingsProvider: "standard"
+  pipelineMaven:
+    globalTraceability: false
+    triggerDownstreamUponResultAborted: false
+    triggerDownstreamUponResultFailure: false
+    triggerDownstreamUponResultNotBuilt: false
+    triggerDownstreamUponResultSuccess: true
+    triggerDownstreamUponResultUnstable: false
+
+jobs:
+  - script: >
+      pipelineJob("jenkinsfile-ornegi") {
+        displayName('React App Pipeline Jobu')
+        description('Bir react uygulamasının Jenkinsfile kullanılarak oluşturulan pipeline')
+
+        definition {
+          cpsScm {
+              scm {
+                  git {
+                      remote { url("https://github.com/cemtopkaya/react-ts-dev-cicd.git") }
+                      branches("main")
+                      scriptPath('./Jenkinsfile')
+                      extensions {
+                        cloneOptions {
+                          timeout(10)
+                        }
+                      }
+                  }
+              }
+              lightweight(false)
+          }
+        }
+
+        properties {
+          pipelineTriggers {
+            triggers {
+              pollSCM {
+                // Her 5 dakikada bir SCM değişikliğini kontrol et
+                scmpoll_spec('H/5 * * * *')  
+              }
+            }
+          }
+        }
+        
+        triggers {
+          scm('H/5 * * * *')
+        }
+      }
+

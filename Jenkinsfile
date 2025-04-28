@@ -1,55 +1,54 @@
 pipeline {
-    agent any
+    // agent any
 
-    params {
-        separator(name: "GIT SETTTINGS")
-        string(name: 'GIT_URL', defaultValue: '.....', description: 'Git repository URL')
+    agent {
+        dockerfile {
+            filename 'Dockerfile.build'
+            dir '.devcontainer'
+            label 'master-jenkins'
+            additionalBuildArgs  '--build-arg version=1.0.2'
+            args '-v /tmp:/tmp'
+        }
+    }
+
+    parameters {
+        separator(name: 'GIT SETTTINGS')
+        string(name: 'GIT_URL', defaultValue: 'https://github.com/cemtopkaya/react-ts-dev-cicd.git', description: 'Git URL')
+        string(name: 'GIT_MAIN_BRANCH', defaultValue: 'main', description: 'Main branch of repository')
         string(name: 'GIT_SOURCE_BRANCH', defaultValue: 'feature/jenkins', description: 'Source branch to merge from')
         string(name: 'GIT_TARGET_BRANCH', defaultValue: 'main', description: 'Target branch to merge into')
         string(name: 'GIT_CREDENTIALS_ID', defaultValue: 'jenkins-git-credentials', description: 'Git credentials ID')
 
-        separator(name: "DOCKER SETTTINGS")
+        separator(name: 'DOCKER SETTTINGS')
         string(name: 'DOCKER_CREDENTIALS_ID', defaultValue: 'jenkins-docker-cred', description: 'Docker credential')
         string(name: 'DOCKER_IMAGE', defaultValue: 'telenity/admin-portal:1.1.1', description: 'Docker image name')
         string(name: 'DOCKER_REGISTRY', defaultValue: 'docker.telenity.com', description: 'Docker registry URL')
 
-        separator(name: "SONARQUBE SETTTINGS")
+        separator(name: 'SONARQUBE SETTTINGS')
         string(name: 'SONAR_URL', defaultValue: 'http://sonar.telenity.com', description: 'SonarQube server URL')
-        string(name: 'SONAR_CREDENTIALS_ID', defaultValue: 'sonarqube-cred', description: 'SonarQube credential')
+        string(name: 'SONAR_CREDENTIALS_ID', defaultValue: 'jenkins-sonar', description: 'SonarQube credential')
         string(name: 'SONAR_PROJECT_KEY', defaultValue: 'react-diff', description: 'SonarQube project key')
         string(name: 'SONAR_PROJECT_NAME', defaultValue: 'React Diff', description: 'SonarQube project name')
     }
 
     environment {
-        DOCKER_CREDENTIALS_ID = credentials("${DOCKER_CREDENTIALS_ID}")
+        // DOCKER_CREDENTIALS_ID = credentials("${DOCKER_CREDENTIALS_ID}")
         SONAR_CREDENTIALS_ID = credentials("${SONAR_CREDENTIALS_ID}")
     }
 
     stages {
-        agent {
-            // Equivalent to "docker build -f Dockerfile.build --build-arg version=1.0.2 ./build/
-            dockerfile {
-                filename 'Dockerfile.build'
-                dir '.devcontainer'
-                label 'react-build-docker'
-                additionalBuildArgs  '--build-arg version=1.0.2'
-                args '-v /tmp:/tmp'
-            }
-        }
         stage('Preparation') {
             steps {
-                script {
-                    // Clean workspace
-                    cleanWs()
-                    // Checkout code
-                    checkout scm
-                }
+                cleanWs()
             }
         }
         stage('Clone Repository') {
             steps {
                 script {
-                    git branch: "${GIT_SOURCE_BRANCH}", url: "${GIT_URL}"
+                    sh "pwd"
+                    sh "ls -alR .."
+                    git branch: "${params.GIT_MAIN_BRANCH}", url: "${params.GIT_URL}"
+                    sh "ls -alR .."
                 }
             }
         }
@@ -60,17 +59,62 @@ pipeline {
                 }
             }
         }
-        stage('SonarQube Analysis') {
+        stage('SonarQube Analysis using sonar-scanner cli ') {
+            environment {
+                SONAR_HOST_URL = "${SONAR_URL}"
+                SONAR_PROJECT_KEY = "${SONAR_PROJECT_KEY}"
+                SONAR_PROJECT_NAME = "${SONAR_PROJECT_NAME}"
+                SONAR_TOKEN = credentials("${SONAR_CREDENTIALS_ID}")
+            }
             steps {
                 script {
-                    withSonarQubeEnv('SonarQube') { // Replace 'SonarQube' with your SonarQube server name
+                    /*
+                        SonarQube sunucusuna erişim için gerekli credential,
+                        SonarQube sunucusunda (örn. http://sonar:9000) Administration->Security->Users
+                        içinde bir token olarak tanımlanmalı ve bu token Jenkins'e credential olarak eklenmiş olmalı.
+                    */
+                    withCredentials([string(credentialsId: "${SONAR_CREDENTIALS_ID}", variable: 'SONAR_TOKEN')]) {
+                        env.SONAR_HOST_URL = "${SONAR_URL}"
                         sh 'npm run sonar:cicd'
                         def response = sh(
                             script: "curl -s https://${SONAR_URL}/api/qualitygates/project_status?projectKey=${SONAR_PROJECT_KEY}",
                             returnStdout: true
                         ).trim()
                         def json = readJSON text: response
-                        if (json.projectStatus.status != 'ERROR') {
+                        if (json.projectStatus.status == 'ERROR') {
+                            error("SonarQube Quality Gate failed: status is ${json.projectStatus.status}")
+                        }
+                        
+                        sh """
+                            sonar-scanner \
+                            -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                            -Dsonar.projectName=${SONAR_PROJECT_NAME} \
+                            -Dsonar.sources=. \
+                            -Dsonar.host.url=${SONAR_URL} \
+                            -Dsonar.login=\${SONAR_TOKEN}
+                        """
+                    }
+                }
+            }
+        }
+        stage('SonarQube Analysis using Sonarqube Plugin in Jenkins') {
+            steps {
+                script {
+                    /*
+                        Jenkins sunucusunda Configuration->Sonarqube Server kısmında
+                        "local-sonar" isimli SonarQube sunucusu tanımlanmış olmalı.
+                        SonarQube sunucusuna erişim için gerekli credential,
+                        SonarQube sunucusunda (örn. http://sonar:9000) Administration->Security->Users
+                        içinde bir token olarak tanımlanmalı ve bu token Jenkins'e credential olarak eklenmiş olmalı.
+                    */
+                    withSonarQubeEnv('local-sonar') {
+                        sh 'npm run sonar:cicd'
+                        def response = sh(
+                            script: "curl -s https://${SONAR_URL}/api/qualitygates/project_status?projectKey=${SONAR_PROJECT_KEY}",
+                            returnStdout: true
+                        ).trim()
+                        def json = readJSON text: response
+                        if (json.projectStatus.status == 'ERROR') {
                             error("SonarQube Quality Gate failed: status is ${json.projectStatus.status}")
                         }
                     }
@@ -93,15 +137,39 @@ pipeline {
         }
         stage('Build-Scan-Push Docker Image') {
             steps {
-                // Docker build 
-                // Trivia: https://www.jenkins.io/doc/book/pipeline/syntax/#docker 
+                // Docker build
+                // Trivia: https://www.jenkins.io/doc/book/pipeline/syntax/#docker
                 // and push
                 script {
                     dir("${WORKSPACE}/release") {
                         sh "docker build -t ${DOCKER_IMAGE} ."
-                        // Trivy taraması yapılacak
-                        // sh 'trivy image --exit-code 1 --severity CRITICAL,HIGH,MEDIUM,LOW \
-                        // --ignore-unfixed --no-progress --quiet ${DOCKER_IMAGE}'
+
+                        // --skip-update : "update database" ile uğraşmasın
+                        // --severity HIGH,CRITICAL: sadece yüksek riskli açıklar gelsin
+                        // --format json --output report.json: Raporu JSON formatında al
+                        // --no-progress: Ekranda gereksiz loading barı çıkmasın
+                        // --exit-code 1: Eğer hata bulursa exit 1 yapar ve Jenkins stage'ı FAIL olsun
+                        def scanExitCode = sh(
+                            script: """
+                                trivy image \
+                                --severity HIGH,CRITICAL \
+                                --ignore-unfixed \
+                                --no-progress \
+                                --skip-update \
+                                --exit-code 1 \
+                                ${DOCKER_IMAGE}
+                            """,
+                            returnStatus: true // Return exit code but don't fail the build
+                        )
+
+                        // Raporu JSON formatında al ve ekrana yazdır (tee komutu ile)
+                        sh "trivy image --format json ${DOCKER_IMAGE} | tee trivy-report.json"
+
+                        if (scanExitCode != 0) {
+                            error("Trivy scan failed with exit code ${scanExitCode}")
+                        }
+
+                        // Push Docker image to registry
                         docker.withRegistry("https://${DOCKER_REGISTRY}", "${DOCKER_CREDENTIALS_ID}") {
                             sh "docker push ${DOCKER_IMAGE}"
                         }
@@ -109,6 +177,7 @@ pipeline {
                 }
             }
         }
+
         stage('Merge to Main') {
             steps {
                 script {
@@ -132,7 +201,6 @@ pipeline {
         }
         always {
             echo 'Cleaning up...'
-            sh 'docker rmi telenity/admin-portal:1.1.1 || true'
         }
         unstable {
             echo 'Pipeline is unstable!'

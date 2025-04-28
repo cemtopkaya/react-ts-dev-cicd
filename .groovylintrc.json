@@ -1,6 +1,9 @@
 {
     "extends": "recommended",
     "rules": {
+        "LineLength": {
+            "enabled": false
+        },
         "NestedBlockDepth": {
             "enabled": false
         }
