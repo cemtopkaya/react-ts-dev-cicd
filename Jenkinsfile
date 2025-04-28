@@ -37,17 +37,16 @@ pipeline {
     }
 
     stages {
-        stage('Preparation') {
+        stage('Preparation & Checkout') {
             steps {
                 cleanWs()
                 checkout scm
             }
         }
-        stage('Clone Repository') {
+        stage('Install Dependencies') {
             steps {
                 script {
-                    sh "pwd"
-                    sh "ls -alR .."
+                    sh 'npm install'
                 }
             }
         }

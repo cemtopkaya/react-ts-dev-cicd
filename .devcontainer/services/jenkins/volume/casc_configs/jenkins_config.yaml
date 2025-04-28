@@ -10,6 +10,8 @@ credentials:
 
 jenkins:
   systemMessage: "Jenkins is ready to use!"
+  # Herhangi bir kullanıcı adı ve şifre olmadan erişim sağlayabilir
+  # ve istediği her şeyi yapabilir olsun diye aşağıdaki satırları kapattık:
   # authorizationStrategy:
   #   loggedInUsersCanDoAnything:
   #     allowAnonymousRead: false
@@ -218,6 +220,8 @@ jobs:
                       }
                   }
               }
+              // lightweight true, eğer repo çok büyükse ve her seferinde clone etmek istemiyorsanız bunu kullanabilirsiniz.
+              // lightweight false, her seferinde repo'yu baştan klonlar ve bu sayede muhtemel lightweight sorunları önlenmiş olur.
               lightweight(false)
           }
         }
