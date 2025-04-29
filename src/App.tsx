@@ -4,7 +4,7 @@ import { CounterButton } from './components/CounterButton'
 
 import './App.css'
 
-console.log("hee1222");
+console.log("düz metin");
 
 function App() {
 
