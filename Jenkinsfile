@@ -94,13 +94,18 @@ pipeline {
                     withCredentials([string(credentialsId: "${SONAR_CREDENTIALS_ID}", variable: 'SONAR_TOKEN')]) {
                         sh 'env'
                         sh 'npm run sonar:cicd'
+                        def url = "curl -s -u ${SONAR_TOKEN}: ${SONAR_URL}/api/qualitygates/project_status?projectKey=${SONAR_PROJECT_KEY}"
                         def response = sh(
-                            script: "curl -s ${SONAR_URL}/api/qualitygates/project_status?projectKey=${SONAR_PROJECT_KEY}",
+                            script: url,
                             returnStdout: true
                         ).trim()
 
-                        echo "SonarQube Quality Gate status: ${SONAR_URL}/api/qualitygates/project_status?projectKey=${SONAR_PROJECT_KEY}"
+                        echo "SonarQube Quality Gate status: ${url}"
                         echo "SonarQube response: ${response}"
+
+                        if (response == null || response == '') {
+                            error("SonarQube Quality Gate failed: response is null or empty")
+                        }
 
                         def json = readJSON text: response
                         if (json.projectStatus.status == 'ERROR') {

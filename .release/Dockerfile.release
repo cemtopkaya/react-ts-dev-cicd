@@ -7,7 +7,7 @@ COPY ./dist .
 RUN npm run build
 
 # Serve stage
-FROM cgr.dev/chainguard/httpd:latest
+FROM cgr.dev/chainguard/httpd:2.4.57
 
 # ensure terminal displays Turkish characters correctly when the container starts
 ENV LANG=C.UTF-8
