@@ -215,6 +215,12 @@ pipeline {
                 }
             }
         }
+
+        stage("konteyneri temizle") {
+            steps {
+                cleanWs()
+            }
+        }
     }
     // Buraya tekrar bakılacak: https://www.jenkins.io/doc/book/pipeline/syntax/#post-conditions
     post {
