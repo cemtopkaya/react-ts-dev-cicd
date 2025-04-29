@@ -226,6 +226,7 @@ pipeline {
         }
         always {
             echo 'Cleaning up...'
+            cleanWs()
         }
         unstable {
             echo 'Pipeline is unstable!'
