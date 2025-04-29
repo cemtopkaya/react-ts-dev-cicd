@@ -58,7 +58,7 @@ pipeline {
             steps {
                 echo "Checkout yapılıyor: ${env.GIT_URL} - ${env.GIT_BRANCH ?: 'main'}"
                 git url: "${env.GIT_URL}", branch: "${env.GIT_BRANCH}"
-                // git url: "${env.GIT_URL}", branch: "${env.GIT_BRANCH}", credentialsId: "${env.GIT_CREDENTIALS_ID}"
+            // git url: "${env.GIT_URL}", branch: "${env.GIT_BRANCH}", credentialsId: "${env.GIT_CREDENTIALS_ID}"
             }
         }
         stage('Install Dependencies') {
@@ -99,11 +99,14 @@ pipeline {
                             returnStdout: true
                         ).trim()
 
+                        echo "SonarQube Quality Gate status: ${SONAR_URL}/api/qualitygates/project_status?projectKey=${SONAR_PROJECT_KEY}"
+                        echo "SonarQube response: ${response}"
+
                         def json = readJSON text: response
                         if (json.projectStatus.status == 'ERROR') {
                             error("SonarQube Quality Gate failed: status is ${json.projectStatus.status}")
                         }
-                        
+
                         sh """
                             echo -----------------------
                             sonar-scanner \
@@ -229,12 +232,12 @@ pipeline {
             echo 'Cleaning up...'
             // cleanWs()
 
-            // cleanWs(cleanWhenNotBuilt: false,
-            //         deleteDirs: true,
-            //         disableDeferredWipeout: true,
-            //         notFailBuild: true,
-            //         patterns: [[pattern: '.gitignore', type: 'INCLUDE'],
-            //                    [pattern: '.propsfile', type: 'EXCLUDE']])
+        // cleanWs(cleanWhenNotBuilt: false,
+        //         deleteDirs: true,
+        //         disableDeferredWipeout: true,
+        //         notFailBuild: true,
+        //         patterns: [[pattern: '.gitignore', type: 'INCLUDE'],
+        //                    [pattern: '.propsfile', type: 'EXCLUDE']])
         }
         unstable {
             echo 'Pipeline is unstable!'
