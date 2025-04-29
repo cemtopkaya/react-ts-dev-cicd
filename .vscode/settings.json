@@ -1,6 +1,6 @@
 {
     "sonarlint.connectedMode.project": {
         "connectionId": "sonar_container",
-        "projectKey": "cem"
+        "projectKey": "react-diff"
     }
 }

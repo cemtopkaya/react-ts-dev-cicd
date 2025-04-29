@@ -29,6 +29,7 @@ services:
           memory: 4g
     ports:
       - "34000:9000"
+      - "39000:9000"
     networks:
       - devnet
 

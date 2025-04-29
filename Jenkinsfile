@@ -95,7 +95,7 @@ pipeline {
                         sh 'env'
                         sh 'npm run sonar:cicd'
                         def response = sh(
-                            script: "curl -s https://${SONAR_URL}/api/qualitygates/project_status?projectKey=${SONAR_PROJECT_KEY}",
+                            script: "curl -s ${SONAR_URL}/api/qualitygates/project_status?projectKey=${SONAR_PROJECT_KEY}",
                             returnStdout: true
                         ).trim()
 
