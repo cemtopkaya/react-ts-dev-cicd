@@ -11,7 +11,7 @@ pipeline {
 
     options {
         // Otomatik checkout istemiyoruz, elle yapacağız
-        skipDefaultCheckout(true)
+        skipDefaultCheckout(false)
     }
 
     parameters {
