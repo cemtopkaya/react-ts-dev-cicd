@@ -10,7 +10,8 @@ pipeline {
     }
 
     options {
-        // Otomatik checkout istemiyoruz, elle yapacağız
+        // Otomatik checkout istemiyorsak yani elle checkout yapacaksak skipDefaultCheckout(true)
+        // Otomatik checkout yapılacaksa yani (Pipeline script from SCM/Multibranch ise) skipDefaultCheckout(true),
         skipDefaultCheckout(false)
     }
 
@@ -48,20 +49,15 @@ pipeline {
     }
 
     stages {
-        stage('Preparation') {
+        stage('Clean Workspace') {
             steps {
-                echo "Preparing workspace..."
-                sh 'pwd'
-                sh 'tree -L 2 -a -l' 
                 cleanWs()
-                sh 'tree -L 2 -a -l'
             }
         }
-        stage('Checkout & Build Agent Docker Image') {
+        stage('Checkout Code') {
             steps {
                 echo "Checkout yapılıyor: ${env.GIT_URL} - ${env.GIT_BRANCH ?: 'main'}"
                 git url: "${env.GIT_URL}", branch: "${env.GIT_BRANCH}"
-                sh 'tree -L 2 -a -l'
                 // git url: "${env.GIT_URL}", branch: "${env.GIT_BRANCH}", credentialsId: "${env.GIT_CREDENTIALS_ID}"
             }
         }
@@ -75,7 +71,6 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    sh "cd ${WORKSPACE}"
                     sh 'pwd'
                     sh 'ls -al'
                     sh 'npm run build'
