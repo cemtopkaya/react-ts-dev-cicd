@@ -77,6 +77,44 @@ pipeline {
                 }
             }
         }
+        stage('SonarQube Analysis using Sonarqube Plugin in Jenkins') {
+            steps {
+                script {
+                    /*
+                        Jenkins sunucusunda Configuration->Sonarqube Server kısmında
+                        "local-sonar" isimli SonarQube sunucusu tanımlanmış olmalı.
+                        SonarQube sunucusuna erişim için gerekli credential,
+                        SonarQube sunucusunda (örn. http://sonar:9000) Administration->Security->Users
+                        içinde bir token olarak tanımlanmalı ve bu token Jenkins'e credential olarak eklenmiş olmalı.
+                    */
+                    withSonarQubeEnv('local-sonar') {
+                        /**
+                            SONAR_MAVEN_GOAL=local-sonar
+                            SONARQUBE_SCANNER_PARAMS={ "sonar.host.url" : "http:\/\/sonar:9000", "sonar.token" : "******"}
+                            SONAR_AUTH_TOKEN=******
+                            SONAR_CONFIG_NAME=local-sonar
+                            SONAR_HOST_URL=http://sonar:9000
+                        */
+                        def response = sh(
+                            script: "curl -s -u ${SONAR_AUTH_TOKEN}: https://${SONAR_HOST_URL}/api/qualitygates/project_status?projectKey=${SONAR_PROJECT_KEY}",
+                            returnStdout: true
+                        ).trim()
+
+                        echo "SonarQube Quality Gate status: ${url}"
+                        echo "SonarQube response: ${response}"
+
+                        if (response == null || response == '') {
+                            error('SonarQube Quality Gate failed: response is null or empty')
+                        }
+
+                        def json = readJSON text: response
+                        if (json.projectStatus.status == 'ERROR') {
+                            error("SonarQube Quality Gate failed: status is ${json.projectStatus.status}")
+                        }
+                    }
+                }
+            }
+        }
         stage('SonarQube Analysis using sonar-scanner cli ') {
             environment {
                 SONAR_HOST_URL = "${SONAR_URL}"
@@ -104,7 +142,7 @@ pipeline {
                         echo "SonarQube response: ${response}"
 
                         if (response == null || response == '') {
-                            error("SonarQube Quality Gate failed: response is null or empty")
+                            error('SonarQube Quality Gate failed: response is null or empty')
                         }
 
                         def json = readJSON text: response
@@ -121,30 +159,6 @@ pipeline {
                             -Dsonar.host.url=${SONAR_URL} \
                             -Dsonar.login=\${SONAR_TOKEN}
                         """
-                    }
-                }
-            }
-        }
-        stage('SonarQube Analysis using Sonarqube Plugin in Jenkins') {
-            steps {
-                script {
-                    /*
-                        Jenkins sunucusunda Configuration->Sonarqube Server kısmında
-                        "local-sonar" isimli SonarQube sunucusu tanımlanmış olmalı.
-                        SonarQube sunucusuna erişim için gerekli credential,
-                        SonarQube sunucusunda (örn. http://sonar:9000) Administration->Security->Users
-                        içinde bir token olarak tanımlanmalı ve bu token Jenkins'e credential olarak eklenmiş olmalı.
-                    */
-                    withSonarQubeEnv('local-sonar') {
-                        sh 'npm run sonar:cicd'
-                        def response = sh(
-                            script: "curl -s https://${SONAR_URL}/api/qualitygates/project_status?projectKey=${SONAR_PROJECT_KEY}",
-                            returnStdout: true
-                        ).trim()
-                        def json = readJSON text: response
-                        if (json.projectStatus.status == 'ERROR') {
-                            error("SonarQube Quality Gate failed: status is ${json.projectStatus.status}")
-                        }
                     }
                 }
             }
