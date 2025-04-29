@@ -204,7 +204,7 @@ jobs:
   - script: >
       pipelineJob("jenkinsfile-ornegi") {
         displayName('React App Pipeline Jobu')
-        description('Bir react uygulamasının Jenkinsfile kullanılarak oluşturulan pipeline')
+        description('Pipeline script from SCM ile react uygulama hattı.')
 
         definition {
           cpsScm {

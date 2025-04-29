@@ -1,6 +1,4 @@
 pipeline {
-    // agent any
-
     agent {
         dockerfile {
             filename 'Dockerfile.build'
@@ -11,10 +9,15 @@ pipeline {
         }
     }
 
+    options {
+        // Otomatik checkout istemiyoruz, elle yapacağız
+        skipDefaultCheckout(true)
+    }
+
     parameters {
         separator(name: 'GIT SETTTINGS')
         string(name: 'GIT_URL', defaultValue: 'https://github.com/cemtopkaya/react-ts-dev-cicd.git', description: 'Git URL')
-        string(name: 'GIT_MAIN_BRANCH', defaultValue: 'main', description: 'Main branch of repository')
+        string(name: 'GIT_BRANCH', defaultValue: 'main', description: 'Main branch of repository')
         string(name: 'GIT_SOURCE_BRANCH', defaultValue: 'feature/jenkins', description: 'Source branch to merge from')
         string(name: 'GIT_TARGET_BRANCH', defaultValue: 'main', description: 'Target branch to merge into')
         string(name: 'GIT_CREDENTIALS_ID', defaultValue: 'jenkins-git-credentials', description: 'Git credentials ID')
@@ -33,14 +36,31 @@ pipeline {
 
     environment {
         // DOCKER_CREDENTIALS_ID = credentials("${DOCKER_CREDENTIALS_ID}")
-        SONAR_CREDENTIALS_ID = credentials("${SONAR_CREDENTIALS_ID}")
+        GIT_URL = "${params.GIT_URL}"
+        GIT_BRANCH = "${params.GIT_BRANCH}"
+        GIT_CREDENTIALS_ID = "${params.GIT_CREDENTIALS_ID}"
+        DOCKER_CREDENTIALS_ID = "${params.DOCKER_CREDENTIALS_ID}"
+        SONAR_URL = "${params.SONAR_URL}"
+        SONAR_CREDENTIAL = credentials("${params.SONAR_CREDENTIALS_ID}")
+        SONAR_CREDENTIALS_ID = "${params.SONAR_CREDENTIALS_ID}"
+        SONAR_PROJECT_KEY = "${params.SONAR_PROJECT_KEY}"
+        SONAR_PROJECT_NAME = "${params.SONAR_PROJECT_NAME}"
     }
 
     stages {
-        stage('Preparation & Checkout') {
+        stage('Preparation') {
             steps {
+                echo "Preparing workspace..."
+                sh 'pwd'
+                sh 'ls -alR' 
                 cleanWs()
-                checkout scm
+            }
+        }
+        stage('Checkout & Build Agent Docker Image') {
+            steps {
+                echo "Checkout yapılıyor: ${env.GIT_URL} - ${env.GIT_BRANCH ?: 'main'}"
+                git url: "${env.GIT_URL}", branch: "${env.GIT_BRANCH}"
+                // git url: "${env.GIT_URL}", branch: "${env.GIT_BRANCH}", credentialsId: "${env.GIT_CREDENTIALS_ID}"
             }
         }
         stage('Install Dependencies') {
@@ -75,18 +95,20 @@ pipeline {
                         içinde bir token olarak tanımlanmalı ve bu token Jenkins'e credential olarak eklenmiş olmalı.
                     */
                     withCredentials([string(credentialsId: "${SONAR_CREDENTIALS_ID}", variable: 'SONAR_TOKEN')]) {
-                        env.SONAR_HOST_URL = "${SONAR_URL}"
+                        sh 'env'
                         sh 'npm run sonar:cicd'
                         def response = sh(
                             script: "curl -s https://${SONAR_URL}/api/qualitygates/project_status?projectKey=${SONAR_PROJECT_KEY}",
                             returnStdout: true
                         ).trim()
+
                         def json = readJSON text: response
                         if (json.projectStatus.status == 'ERROR') {
                             error("SonarQube Quality Gate failed: status is ${json.projectStatus.status}")
                         }
                         
                         sh """
+                            echo -----------------------
                             sonar-scanner \
                             -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
                             -Dsonar.projectName=${SONAR_PROJECT_NAME} \
