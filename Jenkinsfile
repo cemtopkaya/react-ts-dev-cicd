@@ -5,7 +5,7 @@ pipeline {
             dir '.devcontainer'
             label 'master-jenkins'
             additionalBuildArgs  '--build-arg version=1.0.2'
-            args '-v /tmp:/tmp'
+            args '-v /tmp:/tmp -v /var/run/docker.sock:/var/run/docker.sock --network=react-ts-diff-cover_devcontainer_devnet'
         }
     }
 
