@@ -52,14 +52,16 @@ pipeline {
             steps {
                 echo "Preparing workspace..."
                 sh 'pwd'
-                sh 'ls -alR' 
+                sh 'tree -L 2 -a -l' 
                 cleanWs()
+                sh 'tree -L 2 -a -l'
             }
         }
         stage('Checkout & Build Agent Docker Image') {
             steps {
                 echo "Checkout yapılıyor: ${env.GIT_URL} - ${env.GIT_BRANCH ?: 'main'}"
                 git url: "${env.GIT_URL}", branch: "${env.GIT_BRANCH}"
+                sh 'tree -L 2 -a -l'
                 // git url: "${env.GIT_URL}", branch: "${env.GIT_BRANCH}", credentialsId: "${env.GIT_CREDENTIALS_ID}"
             }
         }
