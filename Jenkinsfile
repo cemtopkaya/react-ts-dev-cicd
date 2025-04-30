@@ -20,7 +20,7 @@ pipeline {
                         sh """
                             docker run --rm \
                                 --network=devnet \
-                                -v \$(pwd):/usr/src \
+                                -v "\$WORKDIR":/usr/src \
                                 -w /usr/src \
                                 sonarsource/sonar-scanner-cli \
                                 sonar-scanner \
