@@ -169,7 +169,6 @@ pipeline {
                         // It ensures that the pipeline proceeds only if the Quality Gate passes, 
                         // which is determined by the analysis results uploaded to SonarQube.
                         waitForQualityGate abortPipeline: true
-                    }
                 }
             }
         }
