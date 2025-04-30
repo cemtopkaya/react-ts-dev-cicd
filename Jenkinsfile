@@ -21,18 +21,23 @@ pipeline {
         string(name: 'GIT_BRANCH', defaultValue: 'main', description: 'Main branch of repository')
         string(name: 'GIT_SOURCE_BRANCH', defaultValue: 'feature/jenkins', description: 'Source branch to merge from')
         string(name: 'GIT_TARGET_BRANCH', defaultValue: 'main', description: 'Target branch to merge into')
-        string(name: 'GIT_CREDENTIAL_ID', defaultValue: 'jenkins-git-credentials', description: 'Git credentials ID')
+        string(name: 'GIT_CRED_ID', defaultValue: 'jenkins-git-credentials', description: 'Git credentials ID')
 
         separator(name: 'docker_settings', sectionHeader: 'DOCKER SETTTINGS')
-        string(name: 'DOCKER_CREDENTIAL_ID', defaultValue: 'jenkins-docker-cred', description: 'Docker credential')
+        string(name: 'DOCKER_CRED_ID', defaultValue: 'jenkins-docker-cred', description: 'Docker credential')
         string(name: 'DOCKER_IMAGE', defaultValue: 'telenity/admin-portal:1.1.1', description: 'Docker image name')
         string(name: 'DOCKER_REGISTRY', defaultValue: 'docker.telenity.com', description: 'Docker registry URL')
 
         separator(name: 'sonarqube_settings', sectionHeader: 'SonarQube SETTTINGS')
         string(name: 'SQ_URL', defaultValue: 'http://sonar.telenity.com', description: 'SonarQube server URL')
-        string(name: 'SQ_CREDENTIAL_ID', defaultValue: 'jenkins-sonar', description: 'SonarQube credential')
+        string(name: 'SQ_CRED_ID', defaultValue: 'jenkins-sonar', description: 'SonarQube credential')
         string(name: 'SQ_PROJECT_KEY', defaultValue: 'react-diff', description: 'SonarQube project key')
         string(name: 'SQ_PROJECT_NAME', defaultValue: 'React Diff', description: 'SonarQube project name')
+    }
+
+    environment {
+        GIT_URL = "${params.GIT_URL}"
+        GIT_BRANCH = "${params.GIT_BRANCH}"
     }
 
     stages {
@@ -41,11 +46,23 @@ pipeline {
                 cleanWs()
             }
         }
-        stage('Checkout Code') {
+        stage('Checkout The Code') {
             steps {
                 echo "Git checkout: ${env.GIT_URL} - ${env.GIT_BRANCH ?: 'main'}"
-                git url: "${env.GIT_URL}", branch: "${env.GIT_BRANCH}"
-            // git url: "${env.GIT_URL}", branch: "${env.GIT_BRANCH}", credentialsId: "${env.GIT_CREDENTIALS_ID}"
+                if (params.GIT_CRED_ID) {
+                    withCredentials([string(credentialsId: params.GIT_CRED_ID, variable: 'GIT_TOKEN')]) {
+                        git(
+                            url: env.GIT_URL,
+                            branch: env.GIT_BRANCH,
+                            credentialsId: params.GIT_CRED_ID
+                        )
+                    }
+                } else {
+                    git(
+                        url: env.GIT_URL,
+                        branch: env.GIT_BRANCH
+                    )
+                }
             }
         }
         stage('Install Dependencies') {
@@ -65,7 +82,7 @@ pipeline {
         stage('SonarQube scan') {
             environment {
                 SONAR_URL = "${params.SQ_URL}"
-                SONAR_CREDENTIALS_ID = "${params.SQ_CREDENTIAL_ID}"
+                SONAR_CREDENTIALS_ID = "${params.SQ_CRED_ID}"
                 SONAR_PROJECT_KEY = "${params.SQ_PROJECT_KEY}"
                 SONAR_PROJECT_NAME = "${params.SQ_PROJECT_NAME}"
             }
@@ -252,7 +269,7 @@ pipeline {
             environment {
                 DOCKER_IMAGE = "${params.DOCKER_IMAGE}"
                 DOCKER_REGISTRY = "${params.DOCKER_REGISTRY}"
-                DOCKER_CREDENTIALS_ID = "${params.DOCKER_CREDENTIALS_ID}"
+                DOCKER_CREDENTIALS_ID = "${params.DOCKER_CRED_ID}"
             }
             steps {
                 // Docker build
@@ -288,7 +305,7 @@ pipeline {
                         }
 
                         // Push Docker image to registry
-                        docker.withRegistry("https://${DOCKER_REGISTRY}", "${DOCKER_CREDENTIALS_ID}") {
+                        docker.withRegistry("https://${DOCKER_REGISTRY}", "${env.DOCKER_CREDENTIALS_ID}") {
                             sh "docker push ${DOCKER_IMAGE}"
                         }
                     }
@@ -297,20 +314,13 @@ pipeline {
         }
 
         stage('Merge to Main') {
-            environment {
-                GIT_URL = "${params.GIT_URL}"
-                GIT_BRANCH = "${params.GIT_BRANCH}"
-                GIT_SOURCE_BRANCH = "${params.GIT_SOURCE_BRANCH}"
-                GIT_TARGET_BRANCH = "${params.GIT_TARGET_BRANCH}"
-                GIT_CREDENTIALS_ID = "${params.GIT_CREDENTIAL_ID}"
-            }
             steps {
                 script {
                     sh """
                         git config --global user.email ""
                         git config --global user.name "Jenkins"
-                        git checkout -b ${GIT_TARGET_BRANCH}
-                        git merge --no-ff ${GIT_SOURCE_BRANCH}
+                        git checkout -b ${params.GIT_TARGET_BRANCH}
+                        git merge --no-ff ${params.GIT_SOURCE_BRANCH}
                     """
                 }
             }
