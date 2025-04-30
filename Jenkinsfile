@@ -42,8 +42,8 @@ pipeline {
         GIT_CREDENTIALS_ID = "${params.GIT_CREDENTIALS_ID}"
         DOCKER_CREDENTIALS_ID = "${params.DOCKER_CREDENTIALS_ID}"
         SONAR_URL = "${params.SONAR_URL}"
-        SONAR_CREDENTIAL = credentials("${params.SONAR_CREDENTIALS_ID}")
         SONAR_CREDENTIALS_ID = "${params.SONAR_CREDENTIALS_ID}"
+        SONAR_CREDENTIAL = credentials("${params.SONAR_CREDENTIALS_ID}")
         SONAR_PROJECT_KEY = "${params.SONAR_PROJECT_KEY}"
         SONAR_PROJECT_NAME = "${params.SONAR_PROJECT_NAME}"
     }
@@ -52,6 +52,8 @@ pipeline {
         stage('Clean Workspace') {
             steps {
                 cleanWs()
+                sh "env"
+                sh "echo ${env.SONAR_CREDENTIAL}"
             }
         }
         stage('Checkout Code') {
@@ -88,14 +90,28 @@ pipeline {
                     */
                     withSonarQubeEnv('local-sonar') {
                         /**
+                            withSonarQubeEnv Fonksiyonu aşağıdaki değişkenleri ortam değişkenlerine enjecte eder:
                             SONAR_MAVEN_GOAL=local-sonar
                             SONARQUBE_SCANNER_PARAMS={ "sonar.host.url" : "http:\/\/sonar:9000", "sonar.token" : "******"}
                             SONAR_AUTH_TOKEN=******
                             SONAR_CONFIG_NAME=local-sonar
                             SONAR_HOST_URL=http://sonar:9000
                         */
-                        sh 'env'
-                        sh 'npm run sonar:cicd'
+
+                        // İster yapılandırma aracınızı kullanarak çağırın:
+                        // sh 'npm run sonar:cicd'
+
+                        // İster kendi sonar-scanner CLI'nizi kullanarak çağırın:
+                        sh """
+                            echo -----------------------
+                            sonar-scanner \
+                            -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                            -Dsonar.projectName=${SONAR_PROJECT_NAME} \
+                            -Dsonar.sources=. \
+                            -Dsonar.host.url=${SONAR_HOST_URL} \
+                            -Dsonar.login=${SONAR_AUTH_TOKEN}
+                            echo !!
+                        """
                     }
                 }
             }
@@ -155,20 +171,12 @@ pipeline {
                         } catch (Exception e) {
                             error("SonarQube Quality Gate failed: response is not valid JSON. Error: ${e.getMessage()}\nResponse: ${response}")
                         }
-                    }
+    }
         */
         stage("Quality Gate") {
-            agent none
             steps {
-                // A 1-minute timeout is set to ensure the Quality Gate check does not hang indefinitely.
                 timeout(time: 1, unit: 'HOURS') {
-                        // Adding a visual separator in logs for better readability
-                        sh 'echo -----------------------'
-                        sh "env"
-                        // The waitForQualityGate step checks the status of the SonarQube Quality Gate.
-                        // It ensures that the pipeline proceeds only if the Quality Gate passes, 
-                        // which is determined by the analysis results uploaded to SonarQube.
-                        waitForQualityGate abortPipeline: true
+                    waitForQualityGate abortPipeline: true
                 }
             }
         }
@@ -300,7 +308,7 @@ pipeline {
                 cleanWs()
             }
         }
-    }
+}
     // Buraya tekrar bakılacak: https://www.jenkins.io/doc/book/pipeline/syntax/#post-conditions
     post {
         success {
