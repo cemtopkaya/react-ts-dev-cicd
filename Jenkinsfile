@@ -21,16 +21,16 @@ pipeline {
         string(name: 'GIT_BRANCH', defaultValue: 'main', description: 'Main branch of repository')
         string(name: 'GIT_SOURCE_BRANCH', defaultValue: 'feature/jenkins', description: 'Source branch to merge from')
         string(name: 'GIT_TARGET_BRANCH', defaultValue: 'main', description: 'Target branch to merge into')
-        string(name: 'GIT_CREDENTIALS_ID', defaultValue: 'jenkins-git-credentials', description: 'Git credentials ID')
+        string(name: 'GIT_CREDENTIAL_ID', defaultValue: 'jenkins-git-credentials', description: 'Git credentials ID')
 
         separator(name: 'DOCKER SETTTINGS')
-        string(name: 'DOCKER_CREDENTIALS_ID', defaultValue: 'jenkins-docker-cred', description: 'Docker credential')
+        string(name: 'DOCKER_CREDENTIAL_ID', defaultValue: 'jenkins-docker-cred', description: 'Docker credential')
         string(name: 'DOCKER_IMAGE', defaultValue: 'telenity/admin-portal:1.1.1', description: 'Docker image name')
         string(name: 'DOCKER_REGISTRY', defaultValue: 'docker.telenity.com', description: 'Docker registry URL')
 
         separator(name: 'SONARQUBE SETTTINGS')
         string(name: 'SONAR_URL', defaultValue: 'http://sonar.telenity.com', description: 'SonarQube server URL')
-        string(name: 'SONAR_CREDENTIALS_ID', defaultValue: 'jenkins-sonar', description: 'SonarQube credential')
+        string(name: 'SONAR_CREDENTIAL_ID', defaultValue: 'jenkins-sonar', description: 'SonarQube credential')
         string(name: 'SONAR_PROJECT_KEY', defaultValue: 'react-diff', description: 'SonarQube project key')
         string(name: 'SONAR_PROJECT_NAME', defaultValue: 'React Diff', description: 'SonarQube project name')
     }
@@ -39,13 +39,9 @@ pipeline {
         // DOCKER_CREDENTIALS_ID = credentials("${DOCKER_CREDENTIALS_ID}")
         GIT_URL = "${params.GIT_URL}"
         GIT_BRANCH = "${params.GIT_BRANCH}"
-        GIT_CREDENTIALS_ID = "${params.GIT_CREDENTIALS_ID}"
-        DOCKER_CREDENTIALS_ID = "${params.DOCKER_CREDENTIALS_ID}"
-        SONAR_URL = "${params.SONAR_URL}"
-        SONAR_CREDENTIALS_ID = "${params.SONAR_CREDENTIALS_ID}"
+        GIT_CREDENTIAL_ID = "${params.GIT_CREDENTIAL_ID}"
+        DOCKER_CREDENTIAL_ID = "${params.DOCKER_CREDENTIAL_ID}"
         SONAR_CREDENTIAL = credentials("${params.SONAR_CREDENTIALS_ID}")
-        SONAR_PROJECT_KEY = "${params.SONAR_PROJECT_KEY}"
-        SONAR_PROJECT_NAME = "${params.SONAR_PROJECT_NAME}"
     }
 
     stages {
