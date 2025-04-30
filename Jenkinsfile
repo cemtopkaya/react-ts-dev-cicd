@@ -57,19 +57,15 @@ pipeline {
                 script {
                     echo "Checking out from ${env.GIT_URL} on branch ${env.GIT_BRANCH ?: 'main'}"
                     
-                    def gitConfig = [
-                        url: env.GIT_URL,
-                        branch: env.GIT_BRANCH
-                    ]
-                    
-                    if (params.GIT_CRED_ID?.trim()) {
-                        gitConfig.credentialsId = params.GIT_CRED_ID
-                        withCredentials([string(credentialsId: params.GIT_CRED_ID, variable: 'GIT_TOKEN')]) {
-                            checkout(gitConfig)
-                        }
-                    } else {
-                        checkout(gitConfig)
-                    }
+                    def scmVars = checkout([
+                        $class: 'GitSCM',
+                        branches: [[name: env.GIT_BRANCH]],
+                        extensions: [],
+                        userRemoteConfigs: [[
+                            url: env.GIT_URL,
+                            credentialsId: params.GIT_CRED_ID?.trim() ? params.GIT_CRED_ID : null
+                        ]]
+                    ])
                 }
             }
         }
