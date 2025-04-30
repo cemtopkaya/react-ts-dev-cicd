@@ -27,8 +27,7 @@ pipeline {
                             docker run \
                                 --user root \
                                 --network=devnet \
-                                -v "${env.WORKSPACE}:/usr/src" \
-                                -v "${env.WORKSPACE}/.scannerwork:/usr/src/.scannerwork" \
+                                -v ".:/usr/src" \
                                 -w /usr/src \
                                 sonarsource/sonar-scanner-cli \
                                 sonar-scanner \
