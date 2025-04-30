@@ -36,6 +36,14 @@ pipeline {
     }
 
 
+    environment {
+        GIT_URL = "${params.GIT_URL}"
+        GIT_BRANCH = "${params.GIT_BRANCH}"
+        GIT_CREDENTIAL_ID = "${params.GIT_CREDENTIAL_ID}"
+        DOCKER_CREDENTIAL_ID = "${params.DOCKER_CREDENTIAL_ID}"
+        SONAR_CREDENTIAL = credentials("${params.SONAR_CREDENTIAL_ID}")
+    }
+
     stages {
         stage('Clean Workspace') {
             steps {
