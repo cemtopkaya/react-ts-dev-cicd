@@ -9,25 +9,28 @@ pipeline {
     }
 
     environment {
-        SONAR_SCANNER_OPTS = "-Xmx1024m"
+        SONAR_SCANNER_OPTS = '-Xmx1024m'
     }
 
     stages {
         stage('SonarQube scan by Docker') {
             steps {
                 script {
-                    withSonarQubeEnv(credentialsId: "${params.SQ_CRED_ID}") {
-                        docker.image('sonarsource/sonar-scanner-cli').inside("-v ${env.WORKSPACE}:/usr/src") {
-                            sh """
-                                sonar-scanner \\
-                                -Dsonar.projectKey=${params.SQ_PROJECT_KEY} \\
-                                -Dsonar.projectName='${params.SQ_PROJECT_NAME}' \\
-                                -Dsonar.sources=. \\
-                                -Dsonar.host.url=${params.SQ_URL} \\
-                                -Dsonar.login=${SONAR_AUTH_TOKEN} \\
+                    withSonarQubeEnv('local-sonar') {
+                        sh """
+                            docker run --rm \
+                                --network=devnet \
+                                -v \$(pwd):/usr/src \
+                                -w /usr/src \
+                                sonarsource/sonar-scanner-cli \
+                                sonar-scanner \
+                                -Dsonar.projectKey=${params.SQ_PROJECT_KEY} \
+                                -Dsonar.projectName='${params.SQ_PROJECT_NAME}' \
+                                -Dsonar.sources=. \
+                                -Dsonar.host.url=\${SONAR_HOST_URL} \
+                                -Dsonar.login=\${SONAR_AUTH_TOKEN} \
                                 -Dsonar.scm.disabled=true
-                            """
-                        }
+                        """
                     }
                 }
             }
