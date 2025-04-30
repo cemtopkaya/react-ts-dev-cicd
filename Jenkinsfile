@@ -24,7 +24,7 @@ pipeline {
                         '''
 
                         sh """
-                            docker run --name sq \
+                            docker run \
                                 --user root \
                                 --network=devnet \
                                 -v "${env.WORKSPACE}:/usr/src" \
@@ -42,10 +42,12 @@ pipeline {
                                 -Dsonar.scm.disabled=true
                         """
 
-                        // sh """
-                        //     docker cp sq:/opt/sonar-report .scannerwork/
-                        //     docker rm -f sq
-                        // """
+                        sh """
+                            docker exec -it pwd
+                            docker exec -it sq ls -al 
+                            # docker cp sq:/opt/sonar-report .scannerwork/
+                            # docker rm -f sq
+                        """
                     }
                 }
             }
