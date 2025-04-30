@@ -1,9 +1,5 @@
 pipeline {
-
-    agent {
-        label 'jenkins-master'
-        customWorkspace '/var/jenkins_home/workspace/react-ci'
-    }
+    agent any
 
     parameters {
         string(name: 'SQ_URL', defaultValue: 'http://sonar.telenity.com', description: 'SonarQube server URL')
