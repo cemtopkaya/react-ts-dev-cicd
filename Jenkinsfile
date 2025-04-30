@@ -71,6 +71,9 @@ pipeline {
         }
 
         stage('SonarQube scan by Docker') {
+            environment {
+                SONAR_SCANNER_OPTS = "-Xmx1024m"  
+            }
             steps {
                 script {
                     withSonarQubeEnv('local-sonar') {
@@ -81,7 +84,8 @@ pipeline {
                                 -Dsonar.projectName='${params.SQ_PROJECT_NAME}' \
                                 -Dsonar.sources=. \
                                 -Dsonar.host.url=\${SONAR_HOST_URL} \
-                                -Dsonar.login=\${SONAR_AUTH_TOKEN}
+                                -Dsonar.login=\${SONAR_AUTH_TOKEN} \
+                                -Dsonar.scm.disabled=true
                             """
                         }
                     }
