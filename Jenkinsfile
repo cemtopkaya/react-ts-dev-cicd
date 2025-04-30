@@ -41,20 +41,18 @@ pipeline {
         GIT_BRANCH = "${params.GIT_BRANCH}"
         GIT_CREDENTIAL_ID = "${params.GIT_CREDENTIAL_ID}"
         DOCKER_CREDENTIAL_ID = "${params.DOCKER_CREDENTIAL_ID}"
-        SONAR_CREDENTIAL = credentials("${params.SONAR_CREDENTIAL_ID}")
+        sonarurl = "${params.SONAR_URL}"
     }
 
     stages {
         stage('Clean Workspace') {
             steps {
                 cleanWs()
-                sh "env"
-                sh "echo ${env.SONAR_CREDENTIAL}"
             }
         }
         stage('Checkout Code') {
             steps {
-                echo "Checkout yapılıyor: ${env.GIT_URL} - ${env.GIT_BRANCH ?: 'main'}"
+                echo "Git checkout: ${env.GIT_URL} - ${env.GIT_BRANCH ?: 'main'}"
                 git url: "${env.GIT_URL}", branch: "${env.GIT_BRANCH}"
             // git url: "${env.GIT_URL}", branch: "${env.GIT_BRANCH}", credentialsId: "${env.GIT_CREDENTIALS_ID}"
             }
@@ -73,7 +71,6 @@ pipeline {
                 }
             }
         }
-
         stage('SonarQube scan') {
             steps {
                 script {
@@ -97,8 +94,17 @@ pipeline {
                         // İster yapılandırma aracınızı kullanarak çağırın:
                         // sh 'npm run sonar:cicd'
 
-                        // İster kendi sonar-scanner CLI'nizi kullanarak çağırın:
+                        // İster sonar-scanner CLI aracını kullanarak çağırın:
                         sh """
+                            echo -----------------------
+                            echo SONAR_PROJECT_KEY: \$SONAR_PROJECT_KEY
+                            echo SONAR_PROJECT_NAME: \$SONAR_PROJECT_NAME
+                            echo SONAR_HOST_URL: \$SONAR_HOST_URL
+                            echo SONAR_AUTH_TOKEN: \$SONAR_AUTH_TOKEN
+                            echo SONAR_MAVEN_GOAL: \$SONAR_MAVEN_GOAL
+                            echo SONARQUBE_SCANNER_PARAMS: \$SONARQUBE_SCANNER_PARAMS
+                            echo SONAR_CONFIG_NAME: \$SONAR_CONFIG_NAME
+                            echo SONAR_HOST_URL: ${env.sonarurl}
                             echo -----------------------
                             sonar-scanner \
                             -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
