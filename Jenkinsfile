@@ -18,9 +18,11 @@ pipeline {
                 script {
                     withSonarQubeEnv('local-sonar') {
                         sh """
+                            chmod 777 -R ${env.WORKSPACE}/.scannerwork
                             docker run --rm \
                                 --network=devnet \
                                 -v "${env.WORKSPACE}":/usr/src \
+                                -v "${env.WORKSPACE}/.scannerwork":/tmp/.scannerwork \
                                 -w /usr/src \
                                 sonarsource/sonar-scanner-cli \
                                 sonar-scanner \
