@@ -18,10 +18,9 @@ pipeline {
                 script {
                     withSonarQubeEnv('local-sonar') {
                         sh """
-                            WORKDIR="\$(pwd)"
                             docker run --rm \
                                 --network=devnet \
-                                -v "\$WORKDIR":/usr/src \
+                                -v "${workspacePath}":/usr/src \
                                 -w /usr/src \
                                 sonarsource/sonar-scanner-cli \
                                 sonar-scanner \
