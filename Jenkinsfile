@@ -41,9 +41,9 @@ pipeline {
         GIT_BRANCH = "${params.GIT_BRANCH}"
     }
 
-    tools {
-        sonarQubeScanner 'SonarQube Scanner 4.8.0.2856'
-    }
+    // tools {
+    //     sonarQubeScanner 'SonarQube Scanner 4.8.0.2856'
+    // }
 
     stages {
         stage('Clean Workspace') {
@@ -91,7 +91,7 @@ pipeline {
                 }
             }
         }
-        
+
         stage('Install Dependencies') {
             steps {
                 script {
