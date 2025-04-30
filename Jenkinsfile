@@ -24,7 +24,7 @@ pipeline {
                         '''
 
                         sh """
-                            docker run \
+                            docker run --name sq \
                                 --user root \
                                 --network=devnet \
                                 -v ".:/usr/src" \
@@ -42,7 +42,7 @@ pipeline {
                         """
 
                         sh """
-                            docker exec -it pwd
+                            docker exec -it sq pwd
                             docker exec -it sq ls -al 
                             # docker cp sq:/opt/sonar-report .scannerwork/
                             # docker rm -f sq
