@@ -16,19 +16,19 @@ pipeline {
     }
 
     parameters {
-        separator(name: 'GIT SETTTINGS')
+        separator(name: 'git_settings', sectionHeader: 'GIT SETTTINGS')
         string(name: 'GIT_URL', defaultValue: 'https://github.com/cemtopkaya/react-ts-dev-cicd.git', description: 'Git URL')
         string(name: 'GIT_BRANCH', defaultValue: 'main', description: 'Main branch of repository')
         string(name: 'GIT_SOURCE_BRANCH', defaultValue: 'feature/jenkins', description: 'Source branch to merge from')
         string(name: 'GIT_TARGET_BRANCH', defaultValue: 'main', description: 'Target branch to merge into')
         string(name: 'GIT_CREDENTIAL_ID', defaultValue: 'jenkins-git-credentials', description: 'Git credentials ID')
 
-        separator(name: 'DOCKER SETTTINGS')
+        separator(name: 'docker_settings', sectionHeader: 'DOCKER SETTTINGS')
         string(name: 'DOCKER_CREDENTIAL_ID', defaultValue: 'jenkins-docker-cred', description: 'Docker credential')
         string(name: 'DOCKER_IMAGE', defaultValue: 'telenity/admin-portal:1.1.1', description: 'Docker image name')
         string(name: 'DOCKER_REGISTRY', defaultValue: 'docker.telenity.com', description: 'Docker registry URL')
 
-        separator(name: 'SONARQUBE SETTTINGS')
+        separator(name: 'sonarqube_settings', sectionHeader: 'SonarQube SETTTINGS')
         string(name: 'SQ_URL', defaultValue: 'http://sonar.telenity.com', description: 'SonarQube server URL')
         string(name: 'SQ_CREDENTIAL_ID', defaultValue: 'jenkins-sonar', description: 'SonarQube credential')
         string(name: 'SQ_PROJECT_KEY', defaultValue: 'react-diff', description: 'SonarQube project key')
