@@ -21,6 +21,7 @@ pipeline {
                             docker run --rm \
                                 --network=devnet \
                                 -v "${env.WORKSPACE}":/usr/src \
+                                -v "${env.WORKSPACE}/.scannerwork":/tmp/.scannerwork \
                                 -w /usr/src \
                                 sonarsource/sonar-scanner-cli \
                                 sonar-scanner \
@@ -28,7 +29,7 @@ pipeline {
                                 -Dsonar.projectName='${params.SQ_PROJECT_NAME}' \
                                 -Dsonar.sources=. \
                                 -Dsonar.host.url=\${SONAR_HOST_URL} \
-                                -Dsonar.login=\${SONAR_AUTH_TOKEN} \
+                                -Dsonar.token=\${SONAR_AUTH_TOKEN} \
                                 -Dsonar.scm.disabled=true
                         """
                     }
