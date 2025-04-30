@@ -22,6 +22,12 @@ pipeline {
                         env
                     """
                     withSonarQubeEnv('local-sonar') {
+                        sh """
+                            pwd
+                            ls -al
+                            env
+                        """
+                        
                         sh '''
                             rm -rf .scannerwork
                             mkdir -p .scannerwork
@@ -29,29 +35,52 @@ pipeline {
                         '''
 
                         sh """
-                            docker run --name sq \
+                            docker run --rm --name sq \
                                 --user root \
                                 --network=devnet \
                                 -v "${env.WORKSPACE}:/usr/src" \
+                                -v "${env.WORKSPACE}/.scannerwork:/usr/src/.scannerwork" \
+                                -e SONAR_HOST_URL=\$SONAR_HOST_URL \
+                                -e SONAR_AUTH_TOKEN=\$SONAR_AUTH_TOKEN \
                                 -w /usr/src \
                                 sonarsource/sonar-scanner-cli \
-                                sonar-scanner \
+                                sh -c "pwd && ls -la /usr/src && sonar-scanner \
                                 -Dsonar.projectKey=${params.SQ_PROJECT_KEY} \
                                 -Dsonar.projectName='${params.SQ_PROJECT_NAME}' \
-                                -Dsonar.sources=/usr/src \
-                                -Dsonar.working.directory=/usr/src/.scannerwork \
-                                -Dsonar.scanner.report.export.path=/opt/sonar-report \
-                                -Dsonar.host.url=\${SONAR_HOST_URL} \
-                                -Dsonar.token=\${SONAR_AUTH_TOKEN} \
-                                -Dsonar.scm.disabled=true
+                                -Dsonar.sources=/usr/src/src \\
+                                -Dsonar.working.directory=/usr/src/.scannerwork \\
+                                -Dsonar.host.url=\$SONAR_HOST_URL \\
+                                -Dsonar.token=\$SONAR_AUTH_TOKEN \\
+                                -Dsonar.scm.disabled=true"
                         """
+                        
+                            // docker run --name sq \
+                            //     --user root \
+                            //     --network=devnet \
+                                
+                            //     -v "${env.WORKSPACE}:/usr/src" \
+                            //     -w /usr/src \
 
-                        sh """
-                            docker exec -it sq pwd
-                            docker exec -it sq ls -al 
-                            # docker cp sq:/opt/sonar-report .scannerwork/
-                            docker rm -f sq
-                        """
+                            //     -e SONAR_HOST_URL=\$SONAR_HOST_URL \
+                            //     -e SONAR_AUTH_TOKEN=\$SONAR_AUTH_TOKEN \
+
+                            //     sonarsource/sonar-scanner-cli \
+                            //     sonar-scanner \
+                            //     -Dsonar.projectKey=${params.SQ_PROJECT_KEY} \
+                            //     -Dsonar.projectName='${params.SQ_PROJECT_NAME}' \
+                            //     -Dsonar.sources=/usr/src \
+                            //     -Dsonar.working.directory=/usr/src/.scannerwork \
+                            //     -Dsonar.host.url=\${SONAR_HOST_URL} \
+                            //     -Dsonar.token=\${SONAR_AUTH_TOKEN} \
+                            //     -Dsonar.scm.disabled=true
+                                // -Dsonar.scanner.report.export.path=/opt/sonar-report \
+
+                        // sh """
+                        //     docker exec -it sq pwd
+                        //     docker exec -it sq ls -al 
+                        //     # docker cp sq:/opt/sonar-report .scannerwork/
+                        //     docker rm -f sq
+                        // """
                     }
                 }
             }
