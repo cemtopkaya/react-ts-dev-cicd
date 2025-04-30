@@ -35,15 +35,6 @@ pipeline {
         string(name: 'SQ_PROJECT_NAME', defaultValue: 'React Diff', description: 'SonarQube project name')
     }
 
-
-    environment {
-        GIT_URL = "${params.GIT_URL}"
-        GIT_BRANCH = "${params.GIT_BRANCH}"
-        GIT_CREDENTIAL_ID = "${params.GIT_CREDENTIAL_ID}"
-        DOCKER_CREDENTIAL_ID = "${params.DOCKER_CREDENTIAL_ID}"
-        sonarurl = "${params.SQ_URL}"
-    }
-
     stages {
         stage('Clean Workspace') {
             steps {
@@ -72,6 +63,12 @@ pipeline {
             }
         }
         stage('SonarQube scan') {
+            environment {
+                SONAR_URL = "${params.SQ_URL}"
+                SONAR_CREDENTIALS_ID = "${params.SQ_CREDENTIAL_ID}"
+                SONAR_PROJECT_KEY = "${params.SQ_PROJECT_KEY}"
+                SONAR_PROJECT_NAME = "${params.SQ_PROJECT_NAME}"
+            }
             steps {
                 script {
                     /*
@@ -97,6 +94,7 @@ pipeline {
                         // İster sonar-scanner CLI aracını kullanarak çağırın:
                         sh """
                             echo -----------------------
+                            env
                             echo SQ_PROJECT_KEY: \$SQ_PROJECT_KEY
                             echo SONAR_PROJECT_KEY: \$SONAR_PROJECT_KEY
                             echo SONAR_PROJECT_NAME: \$SONAR_PROJECT_NAME
@@ -174,7 +172,7 @@ pipeline {
                         } catch (Exception e) {
                             error("SonarQube Quality Gate failed: response is not valid JSON. Error: ${e.getMessage()}\nResponse: ${response}")
                         }
-    }
+    
         */
         stage("Quality Gate") {
             steps {
@@ -251,6 +249,11 @@ pipeline {
             }
         }
         stage('Build-Scan-Push Docker Image') {
+            environment {
+                DOCKER_IMAGE = "${params.DOCKER_IMAGE}"
+                DOCKER_REGISTRY = "${params.DOCKER_REGISTRY}"
+                DOCKER_CREDENTIALS_ID = "${params.DOCKER_CREDENTIALS_ID}"
+            }
             steps {
                 // Docker build
                 // Trivia: https://www.jenkins.io/doc/book/pipeline/syntax/#docker
@@ -294,6 +297,13 @@ pipeline {
         }
 
         stage('Merge to Main') {
+            environment {
+                GIT_URL = "${params.GIT_URL}"
+                GIT_BRANCH = "${params.GIT_BRANCH}"
+                GIT_SOURCE_BRANCH = "${params.GIT_SOURCE_BRANCH}"
+                GIT_TARGET_BRANCH = "${params.GIT_TARGET_BRANCH}"
+                GIT_CREDENTIALS_ID = "${params.GIT_CREDENTIAL_ID}"
+            }
             steps {
                 script {
                     sh """
@@ -311,7 +321,7 @@ pipeline {
                 cleanWs()
             }
         }
-}
+    }
     // Buraya tekrar bakılacak: https://www.jenkins.io/doc/book/pipeline/syntax/#post-conditions
     post {
         success {
