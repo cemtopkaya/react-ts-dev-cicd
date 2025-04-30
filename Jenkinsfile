@@ -29,10 +29,10 @@ pipeline {
         string(name: 'DOCKER_REGISTRY', defaultValue: 'docker.telenity.com', description: 'Docker registry URL')
 
         separator(name: 'SONARQUBE SETTTINGS')
-        string(name: 'SONAR_URL', defaultValue: 'http://sonar.telenity.com', description: 'SonarQube server URL')
-        string(name: 'SONAR_CREDENTIAL_ID', defaultValue: 'jenkins-sonar', description: 'SonarQube credential')
-        string(name: 'SONAR_PROJECT_KEY', defaultValue: 'react-diff', description: 'SonarQube project key')
-        string(name: 'SONAR_PROJECT_NAME', defaultValue: 'React Diff', description: 'SonarQube project name')
+        string(name: 'SQ_URL', defaultValue: 'http://sonar.telenity.com', description: 'SonarQube server URL')
+        string(name: 'SQ_CREDENTIAL_ID', defaultValue: 'jenkins-sonar', description: 'SonarQube credential')
+        string(name: 'SQ_PROJECT_KEY', defaultValue: 'react-diff', description: 'SonarQube project key')
+        string(name: 'SQ_PROJECT_NAME', defaultValue: 'React Diff', description: 'SonarQube project name')
     }
 
 
@@ -41,7 +41,7 @@ pipeline {
         GIT_BRANCH = "${params.GIT_BRANCH}"
         GIT_CREDENTIAL_ID = "${params.GIT_CREDENTIAL_ID}"
         DOCKER_CREDENTIAL_ID = "${params.DOCKER_CREDENTIAL_ID}"
-        sonarurl = "${params.SONAR_URL}"
+        sonarurl = "${params.SQ_URL}"
     }
 
     stages {
@@ -97,6 +97,7 @@ pipeline {
                         // İster sonar-scanner CLI aracını kullanarak çağırın:
                         sh """
                             echo -----------------------
+                            echo SQ_PROJECT_KEY: \$SQ_PROJECT_KEY
                             echo SONAR_PROJECT_KEY: \$SONAR_PROJECT_KEY
                             echo SONAR_PROJECT_NAME: \$SONAR_PROJECT_NAME
                             echo SONAR_HOST_URL: \$SONAR_HOST_URL
