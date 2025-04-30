@@ -4,6 +4,11 @@
     "./docker-compose.yml"
   ],
   "service": "devcontainer",
+  "runServices": [
+    "devcontainer"
+    ,"sonar"
+    ,"jenkins"
+  ],
   "workspaceFolder": "/workspace",
   "customizations": {
     "vscode": {

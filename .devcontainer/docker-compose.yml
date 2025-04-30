@@ -65,40 +65,6 @@ services:
       # - ./jenkins/home:/var/jenkins_home
       # - ./jenkins/secrets:/var/jenkins_home/secrets
 
-
-  # jenkins:
-  #   # default ports 8080, 50000 - expose mapping as needed to host
-  #   build:
-  #     context: ./jenkins
-  #     dockerfile: Dockerfile.jenkins
-  #   image: telenity/devops/jenkins:2.492.3
-  #   container_name: cicd-jenkins
-  #   restart: unless-stopped
-  #   privileged: true
-  #   networks:
-  #     - devnet
-  #   ports:
-  #     - "50000:50000"
-  #     - "8888:8080"
-  #   environment:
-  #     TZ: "Europe/Istanbul"
-  #     # -Xmx16g -Xms16g -Djava.io.tmpdir=/var/jenkins_home/tmp
-  #     # https://www.jenkins.io/doc/book/installing/initial-settings/
-  #     JAVA_OPTS: -Djava.awt.headless=true -Dpermissive-script-security.enabled=true -Djenkins.install.runSetupWizard=false -Dhudson.model.DirectoryBrowserSupport.CSP="sandbox allow-same-origin; default-src 'self'; img-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline';"
-  #     JENKINS_OPTS: "--httpPort=8080 --httpListenAddress=0.0.0.0 --argumentsRealm.roles.YONETICI=admin --argumentsRealm.passwd.YONETICI=SIFRE"
-  #     # Kullanıcı adı ve şifreyi burada admin ve admin olarak ayarlıyoruz
-  #     CASC_JENKINS_CONFIG: /tmp/jenkins_home/casc_configs/jenkins_config.yaml
-  #     # docker.sock dosyasını mount ettiğimiz için docker'ı host üzerinde çalıştırabiliriz
-  #     # DOCKER_HOST: "tcp://host.docker.internal:2375"
-
-  #   volumes:
-  #     - /var/run/docker.sock:/var/run/docker.sock
-  #     - ./jenkins/jenkins_home:/var/jenkins_home
-  #     - ./jenkins/casc_configs/jenkins_config.yaml:/tmp/jenkins_home/casc_configs/jenkins_config.yaml
-  #     # - ./jenkins/home:/var/jenkins_home
-  #     # - ./jenkins/secrets:/var/jenkins_home/secrets
-
-
 networks:
   devnet:
     name: devnet
