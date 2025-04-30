@@ -24,7 +24,7 @@ pipeline {
                         '''
 
                         sh """
-                            docker run --rm \
+                            docker run --name sq \
                                 --user root \
                                 --network=devnet \
                                 -v "${env.WORKSPACE}:/usr/src" \
@@ -36,10 +36,16 @@ pipeline {
                                 -Dsonar.projectName='${params.SQ_PROJECT_NAME}' \
                                 -Dsonar.sources=. \
                                 -Dsonar.working.directory=/usr/src/.scannerwork \
+                                -Dsonar.scanner.report.export.path=/opt/sonar-report \
                                 -Dsonar.host.url=\${SONAR_HOST_URL} \
                                 -Dsonar.token=\${SONAR_AUTH_TOKEN} \
                                 -Dsonar.scm.disabled=true
                         """
+
+                        // sh """
+                        //     docker cp sq:/opt/sonar-report .scannerwork/
+                        //     docker rm -f sq
+                        // """
                     }
                 }
             }
