@@ -51,23 +51,24 @@ pipeline {
                 cleanWs()
             }
         }
-        stage('Checkout The Code') {
+        
+        stage('Checkout Code') {
             steps {
                 script {
-                    echo "Git checkout: ${env.GIT_URL} - ${env.GIT_BRANCH ?: 'main'}"
-                    if (params.GIT_CRED_ID) {
+                    echo "Checking out from ${env.GIT_URL} on branch ${env.GIT_BRANCH ?: 'main'}"
+                    
+                    def gitConfig = [
+                        url: env.GIT_URL,
+                        branch: env.GIT_BRANCH
+                    ]
+                    
+                    if (params.GIT_CRED_ID?.trim()) {
+                        gitConfig.credentialsId = params.GIT_CRED_ID
                         withCredentials([string(credentialsId: params.GIT_CRED_ID, variable: 'GIT_TOKEN')]) {
-                            git(
-                                url: env.GIT_URL,
-                                branch: env.GIT_BRANCH,
-                                credentialsId: params.GIT_CRED_ID
-                            )
+                            checkout(gitConfig)
                         }
                     } else {
-                        git(
-                            url: env.GIT_URL,
-                            branch: env.GIT_BRANCH
-                        )
+                        checkout(gitConfig)
                     }
                 }
             }
