@@ -17,14 +17,18 @@ pipeline {
             steps {
                 script {
                     withSonarQubeEnv('local-sonar') {
+                        sh '''
+                            rm -rf .scannerwork
+                            mkdir -p .scannerwork
+                            chmod 777 .scannerwork
+                        '''
+
                         sh """
-                            chmod 777 -R .scannerwork
-                            rm -rf .scannerwork/*
                             docker run --rm \
                                 --user root \
                                 --network=devnet \
-                                -v .:/usr/src \
-                                -v ./.scannerwork:/usr/src/.scannerwork \
+                                -v "${env.WORKSPACE}:/usr/src" \
+                                -v "${env.WORKSPACE}/.scannerwork:/usr/src/.scannerwork" \
                                 -w /usr/src \
                                 sonarsource/sonar-scanner-cli \
                                 sonar-scanner \
