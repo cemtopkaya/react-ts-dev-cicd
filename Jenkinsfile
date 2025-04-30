@@ -21,7 +21,7 @@ pipeline {
         string(name: 'GIT_BRANCH', defaultValue: 'main', description: 'Main branch of repository')
         string(name: 'GIT_SOURCE_BRANCH', defaultValue: 'feature/jenkins', description: 'Source branch to merge from')
         string(name: 'GIT_TARGET_BRANCH', defaultValue: 'main', description: 'Target branch to merge into')
-        string(name: 'GIT_CRED_ID', defaultValue: 'jenkins-git-credentials', description: 'Git credentials ID')
+        string(name: 'GIT_CRED_ID', defaultValue: '', description: 'Git credentials ID')
 
         separator(name: 'docker_settings', sectionHeader: 'DOCKER SETTTINGS')
         string(name: 'DOCKER_CRED_ID', defaultValue: 'jenkins-docker-cred', description: 'Docker credential')
