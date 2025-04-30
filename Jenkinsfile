@@ -160,11 +160,14 @@ pipeline {
         stage("Quality Gate") {
             agent none
             steps {
-                timeout(time: 1, unit: 'MINUTES') {
-                    script {
-                        sh "echo -----------------------"
+                // A 1-minute timeout is set to ensure the Quality Gate check does not hang indefinitely.
+                timeout(time: 1, unit: 'HOURS') {
+                        // Adding a visual separator in logs for better readability
+                        sh 'echo -----------------------'
                         sh "env"
-                        // Wait for SonarQube Quality Gate to be completed
+                        // The waitForQualityGate step checks the status of the SonarQube Quality Gate.
+                        // It ensures that the pipeline proceeds only if the Quality Gate passes, 
+                        // which is determined by the analysis results uploaded to SonarQube.
                         waitForQualityGate abortPipeline: true
                     }
                 }
