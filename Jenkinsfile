@@ -27,13 +27,13 @@ pipeline {
                             docker run --name sq \
                                 --user root \
                                 --network=devnet \
-                                -v ".:/usr/src" \
+                                -v "${env.WORKSPACE}:/usr/src" \
                                 -w /usr/src \
                                 sonarsource/sonar-scanner-cli \
                                 sonar-scanner \
                                 -Dsonar.projectKey=${params.SQ_PROJECT_KEY} \
                                 -Dsonar.projectName='${params.SQ_PROJECT_NAME}' \
-                                -Dsonar.sources=. \
+                                -Dsonar.sources=/usr/src \
                                 -Dsonar.working.directory=/usr/src/.scannerwork \
                                 -Dsonar.scanner.report.export.path=/opt/sonar-report \
                                 -Dsonar.host.url=\${SONAR_HOST_URL} \
