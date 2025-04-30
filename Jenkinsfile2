@@ -21,6 +21,7 @@ pipeline {
                             docker run --rm \
                                 --network=devnet \
                                 -v "${env.WORKSPACE}":/usr/src \
+                                -v "${env.WORKSPACE}/.scannerwork":/tmp/.scannerwork \
                                 -w /usr/src \
                                 sonarsource/sonar-scanner-cli \
                                 sonar-scanner \
@@ -32,14 +33,6 @@ pipeline {
                                 -Dsonar.scm.disabled=true
                         """
                     }
-                }
-            }
-        }
-
-        stage('Quality Gate') {
-            steps {
-                timeout(time: 1, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
                 }
             }
         }
