@@ -1,3 +1,4 @@
+/* groovylint-disable-next-line CompileStatic */
 pipeline {
     agent {
         dockerfile {
@@ -40,6 +41,10 @@ pipeline {
         GIT_BRANCH = "${params.GIT_BRANCH}"
     }
 
+    tools {
+        sonarQubeScanner 'SonarQube Scanner 4.8.0.2856'
+    }
+
     stages {
         stage('Clean Workspace') {
             steps {
@@ -67,6 +72,26 @@ pipeline {
                 }
             }
         }
+
+        stage('SonarQube scan by Docker') {
+            steps {
+                script {
+                    withSonarQubeEnv('local-sonar') {
+                        docker.image('sonarsource/sonar-scanner-cli').inside("-v ${WORKSPACE}:/usr/src") {
+                            sh """
+                                sonar-scanner \
+                                -Dsonar.projectKey=${params.SQ_PROJECT_KEY} \
+                                -Dsonar.projectName='${params.SQ_PROJECT_NAME}' \
+                                -Dsonar.sources=. \
+                                -Dsonar.host.url=\${SONAR_HOST_URL} \
+                                -Dsonar.login=\${SONAR_AUTH_TOKEN}
+                            """
+                        }
+                    }
+                }
+            }
+        }
+        
         stage('Install Dependencies') {
             steps {
                 script {
@@ -81,6 +106,7 @@ pipeline {
                 }
             }
         }
+
         stage('SonarQube scan') {
             // environment {
             //     SONAR_URL = "${params.SQ_URL}"
@@ -123,9 +149,12 @@ pipeline {
                             echo SONAR_SCANNER_JSON_PARAMS: \$SONAR_SCANNER_JSON_PARAMS
                             echo SONAR_CONFIG_NAME: \$SONAR_CONFIG_NAME
                             echo -----------------------
+                        """
+
+                        sh """
                             sonar-scanner \
-                            -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                            -Dsonar.projectName=${SONAR_PROJECT_NAME} \
+                            -Dsonar.projectKey=${params.SQ_PROJECT_KEY} \
+                            -Dsonar.projectName=${params.SQ_PROJECT_NAME} \
                             -Dsonar.sources=. \
                             -Dsonar.host.url=${SONAR_HOST_URL} \
                             -Dsonar.login=${SONAR_AUTH_TOKEN}
