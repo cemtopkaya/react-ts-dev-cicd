@@ -48,20 +48,22 @@ pipeline {
         }
         stage('Checkout The Code') {
             steps {
-                echo "Git checkout: ${env.GIT_URL} - ${env.GIT_BRANCH ?: 'main'}"
-                if (params.GIT_CRED_ID) {
-                    withCredentials([string(credentialsId: params.GIT_CRED_ID, variable: 'GIT_TOKEN')]) {
+                script {
+                    echo "Git checkout: ${env.GIT_URL} - ${env.GIT_BRANCH ?: 'main'}"
+                    if (params.GIT_CRED_ID) {
+                        withCredentials([string(credentialsId: params.GIT_CRED_ID, variable: 'GIT_TOKEN')]) {
+                            git(
+                                url: env.GIT_URL,
+                                branch: env.GIT_BRANCH,
+                                credentialsId: params.GIT_CRED_ID
+                            )
+                        }
+                    } else {
                         git(
                             url: env.GIT_URL,
-                            branch: env.GIT_BRANCH,
-                            credentialsId: params.GIT_CRED_ID
+                            branch: env.GIT_BRANCH
                         )
                     }
-                } else {
-                    git(
-                        url: env.GIT_URL,
-                        branch: env.GIT_BRANCH
-                    )
                 }
             }
         }
