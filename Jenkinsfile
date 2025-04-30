@@ -19,17 +19,19 @@ pipeline {
                     withSonarQubeEnv('local-sonar') {
                         sh """
                             chmod 777 -R .scannerwork
+                            rm -rf .scannerwork/*
                             docker run --rm \
-                                -u 1000:1000 \
+                                --user root \
                                 --network=devnet \
                                 -v .:/usr/src \
-                                -v ./.scannerwork:/tmp/.scannerwork \
+                                -v ./.scannerwork:/usr/src/.scannerwork \
                                 -w /usr/src \
                                 sonarsource/sonar-scanner-cli \
                                 sonar-scanner \
                                 -Dsonar.projectKey=${params.SQ_PROJECT_KEY} \
                                 -Dsonar.projectName='${params.SQ_PROJECT_NAME}' \
                                 -Dsonar.sources=. \
+                                -Dsonar.working.directory=/usr/src/.scannerwork \
                                 -Dsonar.host.url=\${SONAR_HOST_URL} \
                                 -Dsonar.token=\${SONAR_AUTH_TOKEN} \
                                 -Dsonar.scm.disabled=true
