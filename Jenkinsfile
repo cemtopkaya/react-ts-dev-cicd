@@ -16,6 +16,11 @@ pipeline {
         stage('SonarQube scan by Docker') {
             steps {
                 script {
+                    sh """
+                        pwd
+                        ls -al
+                        env
+                    """
                     withSonarQubeEnv('local-sonar') {
                         sh '''
                             rm -rf .scannerwork
@@ -45,7 +50,7 @@ pipeline {
                             docker exec -it sq pwd
                             docker exec -it sq ls -al 
                             # docker cp sq:/opt/sonar-report .scannerwork/
-                            # docker rm -f sq
+                            docker rm -f sq
                         """
                     }
                 }
