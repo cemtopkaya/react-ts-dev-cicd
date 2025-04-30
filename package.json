@@ -45,9 +45,9 @@
     "preview": "npm run build && npm run dev -- preview --outDir dist",
     "lint": "eslint .",
     "-------SONAR": "---------------------------------------------------------",
-    "sonar": "dotenv -e .env.${ENV} -e .env -- sonar-scanner -Dproject.settings=sonar-${ENV}.properties --debug",
-    "sonar:cicd": "ENV=cicd npm run sonar",
-    "sonar:local": "ENV=local npm run sonar"
+    "sonar": "sonar-scanner -Dproject.settings=sonar-project.properties",
+    "sonar:local": "sonar-scanner -Dproject.settings=sonar-local.properties --debug",
+    "sonar:cicd": "sonar-scanner -Dproject.settings=sonar-cicd.properties"
   },
   "dependencies": {
     "react": "^19.0.0",

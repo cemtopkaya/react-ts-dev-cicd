@@ -143,6 +143,19 @@ Bu komut:
 | `sonar.typescript.lcov.reportPaths` | Test kapsam raporlarının yolu |
 | `sonar.token` | Kimlik doğrulama için kullanılan token (dosyalarda değil, ortam değişkenlerinde saklanır) |
 
+
+### sonar.host.url
+
+SonarQube sunucusunun URL'sidir. Projenizin analiz edilmesi işini hangi Sonarqube sunucusunda yapacağını belirtir.
+
+CI/CD pipeline'ınızda SonarQube Jenkins eklentisi, sunucu URL'sini `SONAR_HOST_URL` ortam değişkeniniyle sonar-scanner'ın çalışacağı terminale enjekte eder.
+Eğer bir CI/CD pipeline'ında kullanıyorsanız, bu satırı yorum satırı haline getirin.
+
+```properties
+sonar.host.url=http://host.docker.internal:34000
+```
+
+
 ## 7. DevContainer Entegrasyonu
 
 Proje, VS Code DevContainer içinde SonarLint entegrasyonu sağlar:

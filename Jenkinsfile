@@ -71,13 +71,12 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    sh 'pwd'
-                    sh 'ls -al'
                     sh 'npm run build'
                 }
             }
         }
-        stage('SonarQube Analysis using Sonarqube Plugin in Jenkins') {
+
+        stage('SonarQube scan') {
             steps {
                 script {
                     /*
@@ -95,8 +94,17 @@ pipeline {
                             SONAR_CONFIG_NAME=local-sonar
                             SONAR_HOST_URL=http://sonar:9000
                         */
+                        sh 'env'
+                        sh 'npm run sonar:cicd'
+                    }
+                }
+            }
+        }
+        /*
+
+                        def url = "curl -s -u ${SONAR_TOKEN}: ${SONAR_URL}/api/qualitygates/project_status?projectKey=${SONAR_PROJECT_KEY}"
                         def response = sh(
-                            script: "curl -s -u ${SONAR_AUTH_TOKEN}: https://${SONAR_HOST_URL}/api/qualitygates/project_status?projectKey=${SONAR_PROJECT_KEY}",
+                            script: url,
                             returnStdout: true
                         ).trim()
 
@@ -111,11 +119,63 @@ pipeline {
                         if (json.projectStatus.status == 'ERROR') {
                             error("SonarQube Quality Gate failed: status is ${json.projectStatus.status}")
                         }
+
+                        sh """
+                            echo -----------------------
+                            sonar-scanner \
+                            -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                            -Dsonar.projectName=${SONAR_PROJECT_NAME} \
+                            -Dsonar.sources=. \
+                            -Dsonar.host.url=${SONAR_URL} \
+                            -Dsonar.login=\${SONAR_TOKEN}
+                        """
+
+
+
+
+
+
+                        def response = sh(
+                            script: "curl -s -u ${SONAR_AUTH_TOKEN}: https://${SONAR_HOST_URL}/api/qualitygates/project_status?projectKey=${SONAR_PROJECT_KEY}",
+                            returnStdout: true
+                        ).trim()
+
+                        echo "SonarQube Quality Gate status: ${url}"
+                        echo "SonarQube response: ${response}"
+
+                        if (response == null || response == '') {
+                            error('SonarQube Quality Gate failed: response is null or empty')
+                        }
+
+                        try {
+                            def json = readJSON text: response
+                            if (json.projectStatus.status == 'ERROR') {
+                                error("SonarQube Quality Gate failed: status is ${json.projectStatus.status}")
+                            }
+                        } catch (Exception e) {
+                            error("SonarQube Quality Gate failed: response is not valid JSON. Error: ${e.getMessage()}\nResponse: ${response}")
+                        }
+                    }
+        */
+        stage("Quality Gate") {
+            agent none
+            steps {
+                timeout(time: 1, unit: 'MINUTES') {
+                    script {
+                        sh "echo -----------------------"
+                        sh "env"
+                        // Wait for SonarQube Quality Gate to be completed
+                        waitForQualityGate abortPipeline: true
                     }
                 }
             }
         }
+
         stage('SonarQube Analysis using sonar-scanner cli ') {
+            // skip this stage
+            when {
+                expression { false }
+            }
             environment {
                 SONAR_HOST_URL = "${SONAR_URL}"
                 SONAR_PROJECT_KEY = "${SONAR_PROJECT_KEY}"
