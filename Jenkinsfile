@@ -47,7 +47,7 @@ pipeline {
                                 sh -c "pwd && ls -la /usr/src && sonar-scanner \
                                 -Dsonar.projectKey=${params.SQ_PROJECT_KEY} \
                                 -Dsonar.projectName='${params.SQ_PROJECT_NAME}' \
-                                -Dsonar.sources=/usr/src/src \\
+                                -Dsonar.sources=/usr/src \\
                                 -Dsonar.working.directory=/usr/src/.scannerwork \\
                                 -Dsonar.host.url=\$SONAR_HOST_URL \\
                                 -Dsonar.token=\$SONAR_AUTH_TOKEN \\
