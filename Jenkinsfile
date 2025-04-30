@@ -22,7 +22,7 @@ pipeline {
                             docker run --rm \
                                 --network=devnet \
                                 -v .:/usr/src \
-                                -v ./.scannerwork":/tmp/.scannerwork \
+                                -v ./.scannerwork:/tmp/.scannerwork \
                                 -w /usr/src \
                                 sonarsource/sonar-scanner-cli \
                                 sonar-scanner \
