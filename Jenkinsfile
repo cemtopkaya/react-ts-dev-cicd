@@ -79,6 +79,9 @@ pipeline {
                     withSonarQubeEnv('local-sonar') {
                         docker.image('sonarsource/sonar-scanner-cli').inside("-v ${WORKSPACE}:/usr/src") {
                             sh """
+                            echo -----------------------
+                            env
+                            echo -------------------------
                                 sonar-scanner \
                                 -Dsonar.projectKey=${params.SQ_PROJECT_KEY} \
                                 -Dsonar.projectName='${params.SQ_PROJECT_NAME}' \
