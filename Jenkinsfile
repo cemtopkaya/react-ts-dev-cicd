@@ -35,14 +35,6 @@ pipeline {
         string(name: 'SONAR_PROJECT_NAME', defaultValue: 'React Diff', description: 'SonarQube project name')
     }
 
-    environment {
-        // DOCKER_CREDENTIALS_ID = credentials("${DOCKER_CREDENTIALS_ID}")
-        GIT_URL = "${params.GIT_URL}"
-        GIT_BRANCH = "${params.GIT_BRANCH}"
-        GIT_CREDENTIAL_ID = "${params.GIT_CREDENTIAL_ID}"
-        DOCKER_CREDENTIAL_ID = "${params.DOCKER_CREDENTIAL_ID}"
-        SONAR_CREDENTIAL = credentials("${params.SONAR_CREDENTIALS_ID}")
-    }
 
     stages {
         stage('Clean Workspace') {
