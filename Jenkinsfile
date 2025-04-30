@@ -20,6 +20,7 @@ pipeline {
                         sh """
                             chmod 777 -R .scannerwork
                             docker run --rm \
+                                -u 1000:1000 \
                                 --network=devnet \
                                 -v .:/usr/src \
                                 -v ./.scannerwork:/tmp/.scannerwork \
