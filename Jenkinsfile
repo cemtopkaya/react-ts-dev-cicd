@@ -77,7 +77,6 @@ pipeline {
                     */
 
                     sh 'npm run sonar:cicd'
-
                     def envVars = readProperties file: '.env.cicd'
                     def SONAR_TOKEN = envVars['SONAR_TOKEN']
                     def SONAR_HOST_URL = envVars['SONAR_HOST_URL']
@@ -88,8 +87,10 @@ pipeline {
                     def SONAR_PROJECT_KEY = sonarProps['sonar.projectKey']
                     echo "SonarQube Project Key: ${SONAR_PROJECT_KEY}"
 
-                    def curl = "curl -s -u ${SONAR_TOKEN}: ${SONAR_HOST_URL}/api/qualitygates/project_status?projectKey=${SONAR_PROJECT_KEY}"
+                    def url = "${SONAR_HOST_URL}/api/qualitygates/project_status?projectKey=${SONAR_PROJECT_KEY}"
                     echo "SonarQube Quality Gate URL: ${url}"
+                    def curl = "curl -s -u ${SONAR_TOKEN}: ${url}"
+                    echo "SonarQube Quality Gate curl command: ${curl}"
 
                     def response = sh(
                         script: curl,
