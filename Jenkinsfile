@@ -78,6 +78,8 @@ pipeline {
                         echo -----------------------
                         printenv | grep SONAR
                         echo -----------------------
+                        ls -al
+                        pwd
                     """
 
                     // İster yapılandırma aracınızı kullanarak çağırın:
