@@ -84,15 +84,18 @@ pipeline {
                         docker
                             .image('sonarsource/sonar-scanner-cli')
                             .inside("--network=devnet -v ${WORKSPACE}:/usr/src") {
-                            sh """
-                                ls -al && pwd && sonar-scanner \
-                                -Dsonar.projectKey=${params.SQ_PROJECT_KEY} \
-                                -Dsonar.projectName='${params.SQ_PROJECT_NAME}' \
-                                -Dsonar.sources=. \
-                                -Dsonar.host.url=\${SONAR_HOST_URL} \
-                                -Dsonar.login=\${SONAR_AUTH_TOKEN} \
-                                -Dsonar.scm.disabled=true
-                            """
+                                sh """
+                                    ls -al
+                                    pwd
+                                    sonar-scanner \
+                                    -Dsonar.projectKey=${params.SQ_PROJECT_KEY} \
+                                    -Dsonar.projectName='${params.SQ_PROJECT_NAME}' \
+                                    -Dsonar.sources=. \
+                                    -Dsonar.host.url=\${SONAR_HOST_URL} \
+                                    -Dsonar.token=\${SONAR_AUTH_TOKEN} \
+                                    -Dsonar.scm.disabled=true
+                                    ls -alR
+                                """
                             }
                     }
                 }
