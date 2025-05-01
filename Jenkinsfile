@@ -76,14 +76,14 @@ pipeline {
 
         stage('SonarQube scan by Docker') {
             environment {
-                SONAR_SCANNER_OPTS = "-Xmx1024m"  
+                SONAR_SCANNER_OPTS = "-Xmx1024m"
             }
             steps {
                 script {
                     withSonarQubeEnv('local-sonar') {
                         docker
                             .image('sonarsource/sonar-scanner-cli')
-                            .inside("-v ${WORKSPACE}:/usr/src") {
+                            .inside("--network=devnet -v ${WORKSPACE}:/usr/src") {
                             sh """
                                 ls -al && pwd && sonar-scanner \
                                 -Dsonar.projectKey=${params.SQ_PROJECT_KEY} \
@@ -93,7 +93,7 @@ pipeline {
                                 -Dsonar.login=\${SONAR_AUTH_TOKEN} \
                                 -Dsonar.scm.disabled=true
                             """
-                        }
+                            }
                     }
                 }
             }
