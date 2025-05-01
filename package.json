@@ -46,8 +46,8 @@
     "lint": "eslint .",
     "-------SONAR": "---------------------------------------------------------",
     "sonar": "sonar-scanner -Dproject.settings=sonar-project.properties",
-    "sonar:local": "sonar-scanner -Dproject.settings=sonar-local.properties --debug",
-    "sonar:cicd": "sonar-scanner -Dproject.settings=sonar-cicd.properties"
+    "sonar:local": "dotenv -e .env.local -e .env -- sonar-scanner -Dproject.settings=sonar-local.properties --debug",
+    "sonar:cicd": "dotenv -e .env.cicd -e .env -- sonar-scanner -Dproject.settings=sonar-cicd.properties -X"
   },
   "dependencies": {
     "react": "^19.0.0",

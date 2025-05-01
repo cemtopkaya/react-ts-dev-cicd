@@ -68,20 +68,49 @@ pipeline {
             steps {
                 script {
                     /*
-                        İster withSonarQubeEnv ile SonarQube sunucu bilgilerini environment değişkenlerine inject edin,
-                        ister .env.cicd dosyasını kullanın,
-                        ister Jenkins stage environment kısmında environment değişkenlerini tanımlayın
-                        +
-                        sonar-cicd.properties dosyasının bilgilerini de scanner'a inject edin.
+                        Jenkins sunucusunda Configuration->Sonarqube Server kısmında
+                        "local-sonar" isimli SonarQube sunucusu tanımlanmış olmalı.
+                        SonarQube sunucusuna erişim için gerekli credential,
+                        SonarQube sunucusunda (örn. http://sonar:9000) Administration->Security->Users
+                        içinde bir token olarak tanımlanmalı ve bu token Jenkins'e credential olarak eklenmiş olmalı.
                     */
-                    sh """
-                        echo -----------------------
-                        env | grep SONAR
-                        echo -----------------------
-                    """
+                    withSonarQubeEnv('local-sonar') {
+                        /**
+                            withSonarQubeEnv Fonksiyonu aşağıdaki değişkenleri ortam değişkenlerine enjecte eder:
+                            SONAR_EXTRA_PROPS=-X
+                            SONAR_MAVEN_GOAL=local-sonar
+                            SONARQUBE_SCANNER_PARAMS={ "sonar.host.url" : "http:\/\/sonar:9000", "sonar.token" : "******"}
+                            SONAR_AUTH_TOKEN=******
+                            SONAR_CONFIG_NAME=local-sonar
+                            SONAR_HOST_URL=http://sonar:9000
+                        */
 
-                    // İster yapılandırma aracınızı kullanarak çağırın:
-                    sh 'npm run sonar:cicd'
+                        sh """
+                            echo -----------------------
+                            echo SONAR_PROJECT_KEY: \$SONAR_PROJECT_KEY
+                            echo SONAR_PROJECT_NAME: \$SONAR_PROJECT_NAME
+                            echo SONAR_HOST_URL: \$SONAR_HOST_URL
+                            echo SONAR_AUTH_TOKEN: \$SONAR_AUTH_TOKEN
+                            echo SONAR_MAVEN_GOAL: \$SONAR_MAVEN_GOAL
+                            echo SONARQUBE_SCANNER_PARAMS: \$SONARQUBE_SCANNER_PARAMS
+                            echo SONAR_SCANNER_JSON_PARAMS: \$SONAR_SCANNER_JSON_PARAMS
+                            echo SONAR_CONFIG_NAME: \$SONAR_CONFIG_NAME
+                            echo -----------------------
+                        """
+
+                        // İster yapılandırma aracınızı kullanarak çağırın:
+                        sh 'npm run sonar:cicd'
+
+                    // İster sonar-scanner CLI aracını kullanarak çağırın:
+                    // sh """
+                    //     sonar-scanner \
+                    //     -Dsonar.projectKey=${params.SQ_PROJECT_KEY} \
+                    //     -Dsonar.projectName=${params.SQ_PROJECT_NAME} \
+                    //     -Dsonar.sources=. \
+                    //     -Dsonar.host.url=${env.SONAR_HOST_URL} \
+                    //     -Dsonar.login=${env.SONAR_AUTH_TOKEN}
+                    // """
+                    }
 
                     timeout(time: 1, unit: 'HOURS') {
                         waitForQualityGate abortPipeline: true
