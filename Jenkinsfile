@@ -6,6 +6,7 @@ pipeline {
             dir '.devcontainer'
             label 'master-jenkins'
             additionalBuildArgs  '--build-arg version=1.0.2'
+            reuseNode true
             args '-v /tmp:/tmp -v /var/run/docker.sock:/var/run/docker.sock --network=devnet'
         }
     }
