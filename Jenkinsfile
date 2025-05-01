@@ -98,6 +98,7 @@ pipeline {
                                     sonar-scanner \
                                     -Dsonar.projectKey=${params.SQ_PROJECT_KEY} \
                                     -Dsonar.projectName='${params.SQ_PROJECT_NAME}' \
+                                    -Dsonar.projectBaseDir=. \
                                     -Dsonar.sources=./src \
                                     -Dproject.settings=./sonar-cicd.properties \
                                     -Dsonar.host.url=\${SONAR_HOST_URL} \
