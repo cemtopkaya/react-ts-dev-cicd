@@ -24,11 +24,6 @@ pipeline {
         string(name: 'GIT_TARGET_BRANCH', defaultValue: 'main', description: 'Target branch to merge into')
         string(name: 'GIT_CRED_ID', defaultValue: '', description: 'Git credentials ID')
 
-        separator(name: 'docker_settings', sectionHeader: 'DOCKER SETTTINGS')
-        string(name: 'DOCKER_CRED_ID', defaultValue: 'jenkins-docker-cred', description: 'Docker credential')
-        string(name: 'DOCKER_IMAGE', defaultValue: 'telenity/admin-portal:1.1.1', description: 'Docker image name')
-        string(name: 'DOCKER_REGISTRY', defaultValue: 'docker.telenity.com', description: 'Docker registry URL')
-
         separator(name: 'sonarqube_settings', sectionHeader: 'SonarQube SETTTINGS')
         string(name: 'SQ_URL', defaultValue: 'http://sonar.telenity.com', description: 'SonarQube server URL')
         string(name: 'SQ_CRED_ID', defaultValue: 'jenkins-sonar', description: 'SonarQube credential')
@@ -40,10 +35,6 @@ pipeline {
         GIT_URL = "${params.GIT_URL}"
         GIT_BRANCH = "${params.GIT_BRANCH}"
     }
-
-    // tools {
-    //     sonarQubeScanner 'SonarQube Scanner 4.8.0.2856'
-    // }
 
     stages {
         stage('Clean Workspace') {
@@ -57,7 +48,6 @@ pipeline {
                 script {
                     echo "Checking out from ${env.GIT_URL} on branch ${env.GIT_BRANCH}"
 
-                    // Option 1: Use the git step (simpler)
                     if (params.GIT_CRED_ID?.trim()) {
                         git(
                             url: env.GIT_URL,
@@ -75,12 +65,6 @@ pipeline {
         }
 
         stage('SonarQube scan') {
-            // environment {
-            //     SONAR_URL = "${params.SQ_URL}"
-            //     SONAR_CREDENTIALS_ID = "${params.SQ_CRED_ID}"
-            //     SONAR_PROJECT_KEY = "${params.SQ_PROJECT_KEY}"
-            //     SONAR_PROJECT_NAME = "${params.SQ_PROJECT_NAME}"
-            // }
             steps {
                 script {
                     /*
@@ -123,8 +107,8 @@ pipeline {
                             -Dsonar.projectKey=${params.SQ_PROJECT_KEY} \
                             -Dsonar.projectName=${params.SQ_PROJECT_NAME} \
                             -Dsonar.sources=. \
-                            -Dsonar.host.url=${SONAR_HOST_URL} \
-                            -Dsonar.login=${SONAR_AUTH_TOKEN}
+                            -Dsonar.host.url=${env.SONAR_HOST_URL} \
+                            -Dsonar.login=${env.SONAR_AUTH_TOKEN}
                             echo !!
                         """
                     }
@@ -134,234 +118,6 @@ pipeline {
                     }
                 }
             }
-        }
-
-        stage('Install Dependencies') {
-            steps {
-                script {
-                    sh 'npm install'
-                }
-            }
-        }
-        stage('Build') {
-            steps {
-                script {
-                    sh 'npm run build'
-                }
-            }
-        }
-        /*
-
-                        def url = "curl -s -u ${SONAR_TOKEN}: ${SONAR_URL}/api/qualitygates/project_status?projectKey=${SONAR_PROJECT_KEY}"
-                        def response = sh(
-                            script: url,
-                            returnStdout: true
-                        ).trim()
-
-                        echo "SonarQube Quality Gate status: ${url}"
-                        echo "SonarQube response: ${response}"
-
-                        if (response == null || response == '') {
-                            error('SonarQube Quality Gate failed: response is null or empty')
-                        }
-
-                        def json = readJSON text: response
-                        if (json.projectStatus.status == 'ERROR') {
-                            error("SonarQube Quality Gate failed: status is ${json.projectStatus.status}")
-                        }
-
-                        sh """
-                            echo -----------------------
-                            sonar-scanner \
-                            -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                            -Dsonar.projectName=${SONAR_PROJECT_NAME} \
-                            -Dsonar.sources=. \
-                            -Dsonar.host.url=${SONAR_URL} \
-                            -Dsonar.login=\${SONAR_TOKEN}
-                        """
-
-
-
-
-
-
-                        def response = sh(
-                            script: "curl -s -u ${SONAR_AUTH_TOKEN}: https://${SONAR_HOST_URL}/api/qualitygates/project_status?projectKey=${SONAR_PROJECT_KEY}",
-                            returnStdout: true
-                        ).trim()
-
-                        echo "SonarQube Quality Gate status: ${url}"
-                        echo "SonarQube response: ${response}"
-
-                        if (response == null || response == '') {
-                            error('SonarQube Quality Gate failed: response is null or empty')
-                        }
-
-                        try {
-                            def json = readJSON text: response
-                            if (json.projectStatus.status == 'ERROR') {
-                                error("SonarQube Quality Gate failed: status is ${json.projectStatus.status}")
-                            }
-                        } catch (Exception e) {
-                            error("SonarQube Quality Gate failed: response is not valid JSON. Error: ${e.getMessage()}\nResponse: ${response}")
-                        }
-    
-        */
-
-        stage('SonarQube Analysis using sonar-scanner cli ') {
-            // skip this stage
-            when {
-                expression { false }
-            }
-            environment {
-                SONAR_HOST_URL = "${SONAR_URL}"
-                SONAR_PROJECT_KEY = "${SONAR_PROJECT_KEY}"
-                SONAR_PROJECT_NAME = "${SONAR_PROJECT_NAME}"
-                SONAR_TOKEN = credentials("${SONAR_CREDENTIALS_ID}")
-            }
-            steps {
-                script {
-                    /*
-                        SonarQube sunucusuna erişim için gerekli credential,
-                        SonarQube sunucusunda (örn. http://sonar:9000) Administration->Security->Users
-                        içinde bir token olarak tanımlanmalı ve bu token Jenkins'e credential olarak eklenmiş olmalı.
-                    */
-                    withCredentials([string(credentialsId: "${SONAR_CREDENTIALS_ID}", variable: 'SONAR_TOKEN')]) {
-                        sh 'env'
-                        sh 'npm run sonar:cicd'
-                        def url = "curl -s -u ${SONAR_TOKEN}: ${SONAR_URL}/api/qualitygates/project_status?projectKey=${SONAR_PROJECT_KEY}"
-                        def response = sh(
-                            script: url,
-                            returnStdout: true
-                        ).trim()
-
-                        echo "SonarQube Quality Gate status: ${url}"
-                        echo "SonarQube response: ${response}"
-
-                        if (response == null || response == '') {
-                            error('SonarQube Quality Gate failed: response is null or empty')
-                        }
-
-                        def json = readJSON text: response
-                        if (json.projectStatus.status == 'ERROR') {
-                            error("SonarQube Quality Gate failed: status is ${json.projectStatus.status}")
-                        }
-
-                        sh """
-                            echo -----------------------
-                            sonar-scanner \
-                            -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                            -Dsonar.projectName=${SONAR_PROJECT_NAME} \
-                            -Dsonar.sources=. \
-                            -Dsonar.host.url=${SONAR_URL} \
-                            -Dsonar.login=\${SONAR_TOKEN}
-                        """
-                    }
-                }
-            }
-        }
-        stage('Run Tests') {
-            steps {
-                script {
-                    sh 'npm run test:run:coverage'
-                }
-            }
-        }
-        stage('Coverage Check') {
-            steps {
-                script {
-                    sh 'npm run coverage:newcode'
-                }
-            }
-        }
-        stage('Build-Scan-Push Docker Image') {
-            environment {
-                DOCKER_IMAGE = "${params.DOCKER_IMAGE}"
-                DOCKER_REGISTRY = "${params.DOCKER_REGISTRY}"
-                DOCKER_CREDENTIALS_ID = "${params.DOCKER_CRED_ID}"
-            }
-            steps {
-                // Docker build
-                // Trivia: https://www.jenkins.io/doc/book/pipeline/syntax/#docker
-                // and push
-                script {
-                    dir("${WORKSPACE}/release") {
-                        sh "docker build -t ${DOCKER_IMAGE} ."
-
-                        // --skip-update : "update database" ile uğraşmasın
-                        // --severity HIGH,CRITICAL: sadece yüksek riskli açıklar gelsin
-                        // --format json --output report.json: Raporu JSON formatında al
-                        // --no-progress: Ekranda gereksiz loading barı çıkmasın
-                        // --exit-code 1: Eğer hata bulursa exit 1 yapar ve Jenkins stage'ı FAIL olsun
-                        def scanExitCode = sh(
-                            script: """
-                                trivy image \
-                                --severity HIGH,CRITICAL \
-                                --ignore-unfixed \
-                                --no-progress \
-                                --skip-update \
-                                --exit-code 1 \
-                                ${DOCKER_IMAGE}
-                            """,
-                            returnStatus: true // Return exit code but don't fail the build
-                        )
-
-                        // Raporu JSON formatında al ve ekrana yazdır (tee komutu ile)
-                        sh "trivy image --format json ${DOCKER_IMAGE} | tee trivy-report.json"
-
-                        if (scanExitCode != 0) {
-                            error("Trivy scan failed with exit code ${scanExitCode}")
-                        }
-
-                        // Push Docker image to registry
-                        docker.withRegistry("https://${DOCKER_REGISTRY}", "${env.DOCKER_CREDENTIALS_ID}") {
-                            sh "docker push ${DOCKER_IMAGE}"
-                        }
-                    }
-                }
-            }
-        }
-
-        stage('Merge to Main') {
-            steps {
-                script {
-                    sh """
-                        git config --global user.email ""
-                        git config --global user.name "Jenkins"
-                        git checkout -b ${params.GIT_TARGET_BRANCH}
-                        git merge --no-ff ${params.GIT_SOURCE_BRANCH}
-                    """
-                }
-            }
-        }
-
-        stage("konteyneri temizle") {
-            steps {
-                cleanWs()
-            }
-        }
-    }
-    // Buraya tekrar bakılacak: https://www.jenkins.io/doc/book/pipeline/syntax/#post-conditions
-    post {
-        success {
-            echo 'Pipeline completed successfully!'
-        }
-        failure {
-            echo 'Pipeline failed!'
-        }
-        always {
-            echo 'Cleaning up...'
-            // cleanWs()
-
-        // cleanWs(cleanWhenNotBuilt: false,
-        //         deleteDirs: true,
-        //         disableDeferredWipeout: true,
-        //         notFailBuild: true,
-        //         patterns: [[pattern: '.gitignore', type: 'INCLUDE'],
-        //                    [pattern: '.propsfile', type: 'EXCLUDE']])
-        }
-        unstable {
-            echo 'Pipeline is unstable!'
         }
     }
 }
