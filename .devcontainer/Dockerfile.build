@@ -29,8 +29,14 @@ RUN apt-get update && \
 RUN apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# install vite globally (optional)
-RUN npm install -g vite sonarqube-scanner dotenv
+# install global npm packages
+# Vite is a build tool that aims to provide a faster and leaner development experience for modern web projects
+# SonarQube scanner is a tool to scan your code for quality and security issues
+# dotenv is a zero-dependency module that loads environment variables from a .env file into process.env
+RUN npm install -g \
+        vite \
+        sonarqube-scanner \
+        dotenv
 
 # working directory
 WORKDIR /workspace
