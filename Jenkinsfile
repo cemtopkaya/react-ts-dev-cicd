@@ -81,26 +81,34 @@ pipeline {
             steps {
                 script {
                     withSonarQubeEnv('local-sonar') {
+                        /*
+                        SONAR_USER_HOME=/opt/sonar-scanner/.sonar
+                        SONAR_CONFIG_NAME=local-sonar
+                        SONAR_EXTRA_PROPS=-X
+                        SONAR_AUTH_TOKEN=******
+                        SONAR_MAVEN_GOAL=sonar:sonar
+                        SONAR_SCANNER_OPTS=-Xmx1024m
+                        SONAR_HOST_URL=http://sonar:9000
+                        SONAR_SCANNER_HOME=/opt/sonar-scanner
+                        */
                         docker
                             .image('sonarsource/sonar-scanner-cli')
                             .inside("--network=devnet -v ${WORKSPACE}:/usr/src") {
                                 sh """
-                                    ls -al
-                                    pwd
-                                    env
-                                    sonar-scanner \
-                                    -Dsonar.projectKey=${params.SQ_PROJECT_KEY} \
-                                    -Dsonar.projectName='${params.SQ_PROJECT_NAME}' \
-                                    -Dsonar.sources=. \
-                                     -Dproject.settings=./sonar-cicd.properties \
-                                    -Dsonar.host.url=\${SONAR_HOST_URL} \
-                                    -Dsonar.token=\${SONAR_AUTH_TOKEN} \
-                                    -Dsonar.scm.disabled=true
-                                    ls -alR
+                                    apt install curl -y
+                                    curl -sSL ${params.SQ_URL}/api/system/status
+                                    # sonar-scanner \
+                                    # -Dsonar.projectKey=${params.SQ_PROJECT_KEY} \
+                                    # -Dsonar.projectName='${params.SQ_PROJECT_NAME}' \
+                                    # -Dsonar.sources=. \
+                                    # -Dproject.settings=./sonar-cicd.properties \
+                                    # -Dsonar.host.url=\${SONAR_HOST_URL} \
+                                    # -Dsonar.token=\${SONAR_AUTH_TOKEN} \
+                                    # -Dsonar.scm.disabled=true
                                 """
                             }
                     }
-                    
+
                     timeout(time: 5, unit: 'MINUTES') {
                         waitForQualityGate abortPipeline: true
                     }
