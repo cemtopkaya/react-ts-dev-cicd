@@ -76,7 +76,7 @@ pipeline {
                     */
                     sh """
                         echo -----------------------
-                        env | grep SONAR
+                        printenv | grep SONAR
                         echo -----------------------
                     """
 
