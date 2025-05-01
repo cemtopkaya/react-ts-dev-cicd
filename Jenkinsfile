@@ -87,10 +87,12 @@ pipeline {
                                 sh """
                                     ls -al
                                     pwd
+                                    env
                                     sonar-scanner \
                                     -Dsonar.projectKey=${params.SQ_PROJECT_KEY} \
                                     -Dsonar.projectName='${params.SQ_PROJECT_NAME}' \
                                     -Dsonar.sources=. \
+                                     -Dproject.settings=../sonar-cicd.properties \
                                     -Dsonar.host.url=\${SONAR_HOST_URL} \
                                     -Dsonar.token=\${SONAR_AUTH_TOKEN} \
                                     -Dsonar.scm.disabled=true
