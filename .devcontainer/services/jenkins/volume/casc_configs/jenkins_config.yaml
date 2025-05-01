@@ -167,17 +167,33 @@ unclassified:
     hideCredentials: false
     showEntireCommitSummaryInChanges: false
     useExistingAccountWithSameEmail: false
+
   separator:
-    globalSectionHeaderStyle: "font-weight: bold;"
+    globalSectionHeaderStyle: |-
+      background-color: #7ea6d3;
+      text-align: center;
+      padding: 4px;
+      color: #343434;
+      font-size: 22px;
+      font-weight: normal;
+      line-height: 1.5em;
+      text-transform: uppercase;
+      font-family: 'Orienta', sans-serif;
+      letter-spacing: 1px;
+      font-style: italic;
+    globalSeparatorStyle: "border-width: 0px;"
+
   sonarGlobalConfiguration:
     buildWrapperEnabled: true
     installations:
-    - credentialsId: "jenkins-sonar"
+    - additionalProperties: "-X"
+      credentialsId: "jenkins-sonar"
       name: "local-sonar"
       serverUrl: "http://sonar:9000"
       triggers:
         skipScmCause: false
         skipUpstreamCause: false
+        
   subversionSCM:
     workspaceFormat: 8
   timestamper:
