@@ -79,7 +79,7 @@ pipeline {
                     sh 'npm run sonar:cicd'
 
 
-                    def url = "curl -s -u ${SONAR_TOKEN}: ${SONAR_HOST_URL}/api/qualitygates/project_status?projectKey=${SONAR_PROJECT_KEY}"
+                    def url = "dotenv -e .env.cicd -- curl -s -u ${SONAR_TOKEN}: ${SONAR_HOST_URL}/api/qualitygates/project_status?projectKey=${SONAR_PROJECT_KEY}"
                     echo "SonarQube Quality Gate URL: ${url}"
                     def response = sh(
                         script: url,
