@@ -75,12 +75,7 @@ pipeline {
                         +
                         sonar-cicd.properties dosyasının bilgilerini de scanner'a inject edin.
                     */
-                    sh """
-                        ls -al
-                        pwd
-                    """
 
-                    // İster yapılandırma aracınızı kullanarak çağırın:
                     sh 'npm run sonar:cicd'
 
                     timeout(time: 1, unit: 'HOURS') {
