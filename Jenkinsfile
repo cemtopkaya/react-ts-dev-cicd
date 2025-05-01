@@ -75,9 +75,6 @@ pipeline {
                         sonar-cicd.properties dosyasının bilgilerini de scanner'a inject edin.
                     */
                     sh """
-                        echo -----------------------
-                        printenv | grep SONAR
-                        echo -----------------------
                         ls -al
                         pwd
                     """
