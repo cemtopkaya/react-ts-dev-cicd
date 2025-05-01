@@ -36,7 +36,7 @@ RUN apt-get clean && \
 RUN npm install -g \
         vite \
         sonarqube-scanner \
-        dotenv
+        dotenv-cli
 
 # working directory
 WORKDIR /workspace
