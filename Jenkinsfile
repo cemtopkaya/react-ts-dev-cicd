@@ -95,11 +95,10 @@ pipeline {
                             .image('sonarsource/sonar-scanner-cli')
                             .inside("--network=devnet -v ${WORKSPACE}:/usr/src") {
                                 sh """
-                                    curl -sSL \${SONAR_HOST_URL}/api/system/status
                                     sonar-scanner \
                                     -Dsonar.projectKey=${params.SQ_PROJECT_KEY} \
                                     -Dsonar.projectName='${params.SQ_PROJECT_NAME}' \
-                                    -Dsonar.sources=. \
+                                    -Dsonar.sources=./src \
                                     -Dproject.settings=./sonar-cicd.properties \
                                     -Dsonar.host.url=\${SONAR_HOST_URL} \
                                     -Dsonar.token=\${SONAR_AUTH_TOKEN} \
@@ -114,8 +113,8 @@ pipeline {
                 }
             }
         }
-
     }
+
     // Buraya tekrar bakılacak: https://www.jenkins.io/doc/book/pipeline/syntax/#post-conditions
     post {
         success {
