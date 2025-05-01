@@ -95,7 +95,7 @@ pipeline {
                             .image('sonarsource/sonar-scanner-cli')
                             .inside("--network=devnet -v ${WORKSPACE}:/usr/src") {
                                 sh """
-                                    curl -sSL ${params.SQ_URL}/api/system/status
+                                    curl -sSL \${SONAR_HOST_URL}/api/system/status
                                     sonar-scanner \
                                     -Dsonar.projectKey=${params.SQ_PROJECT_KEY} \
                                     -Dsonar.projectName='${params.SQ_PROJECT_NAME}' \
