@@ -78,9 +78,26 @@ pipeline {
 
                     sh 'npm run sonar:cicd'
 
-                    timeout(time: 1, unit: 'HOURS') {
-                        waitForQualityGate abortPipeline: true
+
+                    def url = "curl -s -u ${SONAR_TOKEN}: ${SONAR_HOST_URL}/api/qualitygates/project_status?projectKey=${SONAR_PROJECT_KEY}"
+                    echo "SonarQube Quality Gate URL: ${url}"
+                    def response = sh(
+                        script: url,
+                        returnStdout: true
+                    ).trim()
+
+                    echo "SonarQube Quality Gate status: ${url}"
+                    echo "SonarQube response: ${response}"
+
+                    if (response == null || response == '') {
+                        error('SonarQube Quality Gate failed: response is null or empty')
                     }
+
+                    def json = readJSON text: response
+                    if (json.projectStatus.status == 'ERROR') {
+                        error("SonarQube Quality Gate failed: status is ${json.projectStatus.status}")
+                    }
+
                 }
             }
         }
