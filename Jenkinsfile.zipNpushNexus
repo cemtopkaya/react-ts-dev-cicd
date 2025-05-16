@@ -85,7 +85,7 @@ pipeline {
                             fi
 
                             echo "Artifact ID: \$NEXUS_ARTIFACT_ID"
-                            echo "Artifact Version: $NEXUS_ARTIFACT_VERSION"
+                            echo "Artifact Version: \$NEXUS_ARTIFACT_VERSION"
                             echo "Nexus URL: ${params.NEXUS_URL}"
                             echo "Nexus Repository: ${params.NEXUS_REPO}"
                             echo "Nexus Group: ${params.NEXUS_GROUP}"
