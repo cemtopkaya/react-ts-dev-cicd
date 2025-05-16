@@ -69,6 +69,12 @@ This dev container setup provides the following services via Docker Compose:
   - Exposes port `9000` on host port `34000`.
   - Connected to the same `devnet` network with a static IP.
 
+- **nexus**:
+  - Repository for jar,war,zip,container image, npm etc.
+  - Read the admin password from nexus container (`docker exec -it nexus cat /nexus-data/admin.password`).
+  - Exposes port `8081` on host port `8081`.
+  - Using browser you can login to the nexus web app.
+
 ## devcontainer.json Details
 
 - **Name**: React Dev Container

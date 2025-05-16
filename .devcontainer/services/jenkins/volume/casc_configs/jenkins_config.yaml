@@ -226,7 +226,8 @@ jobs:
           cpsScm {
               scm {
                   git {
-                      remote { url("https://github.com/cemtopkaya/react-ts-dev-cicd.git") }
+                      // remote { url("https://github.com/cemtopkaya/react-ts-dev-cicd.git") }
+                      remote { url("file:///tmp/code-repo") }
                       branches("main")
                       scriptPath('./Jenkinsfile')
                       extensions {
