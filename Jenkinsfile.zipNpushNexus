@@ -73,7 +73,7 @@ pipeline {
                     )]) {
                         // Zip the artifact
                         sh """
-                            if [ -z "${NEXUS_ARTIFACT_ID}" ]; then
+                            if [ -z "${params.NEXUS_ARTIFACT_ID}" ]; then
                                 export NEXUS_ARTIFACT_ID=`jq -r .name package.json`
                             fi
                             if [ -z "${params.NEXUS_ARTIFACT_VERSION}" ]; then
