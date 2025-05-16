@@ -80,18 +80,20 @@ pipeline {
                         sh 'jq -r .name package.json'
                         sh 'jq -r .version package.json'
 
+                        if (env.NEXUS_ARTIFACT_ID == "" || env.NEXUS_ARTIFACT_ID == null) {
+                            echo "if icinde Artifact ID: ${env.NEXUS_ARTIFACT_ID}"
+                            env.NEXUS_ARTIFACT_ID = sh(script: 'jq -r .name package.json', returnStdout: true).trim()
+                            echo "yeni Artifact ID: ${env.NEXUS_ARTIFACT_ID}"
+                        }
+
+                        if (env.NEXUS_ARTIFACT_VERSION == "" || env.NEXUS_ARTIFACT_VERSION == null) {
+                            echo "if icinde Artifact ID: ${env.NEXUS_ARTIFACT_VERSION}"
+                            env.NEXUS_ARTIFACT_VERSION = sh(script: 'jq -r .version package.json', returnStdout: true).trim()
+                            echo "yeni Artifact ID: ${env.NEXUS_ARTIFACT_VERSION}"
+                        }
+
                         sh """
-                            if [ -z "${env.NEXUS_ARTIFACT_ID}" ]; then
-                                echo "Artifact ID env: ${env.NEXUS_ARTIFACT_ID}"
-                                export NEXUS_ARTIFACT_ID=`jq -r .name package.json`
-                                echo "Artifact ID: \$NEXUS_ARTIFACT_ID"
-                                echo "Artifact ID env: ${env.NEXUS_ARTIFACT_ID}"
-                            fi
-
-                            if [ -z "${env.NEXUS_ARTIFACT_VERSION}" ]; then
-                                export NEXUS_ARTIFACT_VERSION=`jq -r .version package.json`
-                            fi
-
+                            printenv
                             echo "Artifact ID: \$NEXUS_ARTIFACT_ID"
                             echo "Artifact Version: \$NEXUS_ARTIFACT_VERSION"
                             echo "Nexus URL: ${params.NEXUS_URL}"
