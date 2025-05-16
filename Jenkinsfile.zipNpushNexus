@@ -14,6 +14,9 @@ pipeline {
     }
 
     parameters {
+        separator(name: 'jenkins_settings', sectionHeader: 'JENKINS SETTINGS')
+        booleanParam(name: 'DEBUG', defaultValue: true, description: 'Enable debug mode')
+
         separator(name: 'git_settings', sectionHeader: 'GIT SETTINGS')
         string(name: 'GIT_URL', defaultValue: 'file:///tmp/code-repo', description: 'Git URL')
         string(name: 'GIT_BRANCH', defaultValue: 'main', description: 'Main branch of repository')
@@ -25,6 +28,7 @@ pipeline {
         string(name: 'NEXUS_REPO', defaultValue: 'zip-archive', description: 'Nexus repository')
         string(name: 'NEXUS_GROUP', defaultValue: 'com.telenity.portal', description: 'Nexus group')
         string(name: 'NEXUS_ARTIFACT_ID', defaultValue: 'portal-web', description: 'Nexus artifact ID')
+        string(name: 'NEXUS_ARTIFACT_VERSION', defaultValue: '1.0.0', description: 'Version of the artifact')
     }
 
     environment {
