@@ -78,7 +78,7 @@ pipeline {
                         // Zip the artifact
                         sh """
                             if [ -z "${env.NEXUS_ARTIFACT_ID}" ]; then
-                                echo "Artifact ID: \$NEXUS_ARTIFACT_ID"
+                                env
                                 echo "Artifact ID escapesiz: $NEXUS_ARTIFACT_ID"
                                 echo "Artifact ID env: ${env.NEXUS_ARTIFACT_ID}"
                                 jq -r .name package.json
