@@ -30,7 +30,6 @@ pipeline {
     environment {
         GIT_URL = "${params.GIT_URL}"
         GIT_BRANCH = "${params.GIT_BRANCH}"
-        NEXUS_ARTIFACT_VERSION = '1.0.0'
     }
 
     stages {
@@ -64,6 +63,9 @@ pipeline {
         }
 
         stage('Zip and Upload to Nexus') {
+            environment {
+                NEXUS_ARTIFACT_VERSION = '1.0.0'
+            }
             steps {
                 script {
                     withCredentials([usernamePassword(
@@ -73,8 +75,21 @@ pipeline {
                     )]) {
                         // Zip the artifact
                         sh """
-                            zip -r ${params.NEXUS_ARTIFACT_ID}-${env.NEXUS_ARTIFACT_VERSION}.zip dist/
-                            
+                            if [ -z "${NEXUS_ARTIFACT_ID}" ]; then
+                                export NEXUS_ARTIFACT_ID=`jq -r .name package.json`
+                            fi
+                            if [ -z "${NEXUS_ARTIFACT_VERSION}" ]; then
+                                export NEXUS_ARTIFACT_VERSION=`jq -r .version package.json`
+                            fi
+
+                            echo "Artifact ID: ${NEXUS_ARTIFACT_ID}"
+                            echo "Artifact Version: ${NEXUS_ARTIFACT_VERSION}"
+                            echo "Nexus URL: ${params.NEXUS_URL}"
+                            echo "Nexus Repository: ${params.NEXUS_REPO}"
+                            echo "Nexus Group: ${params.NEXUS_GROUP}"
+
+                            zip -r ${env.NEXUS_ARTIFACT_ID}-${env.NEXUS_ARTIFACT_VERSION}.zip dist/
+
                             # Upload to Nexus
                             curl -v -u ${env.NEXUS_USER}:${env.NEXUS_PASS} \
                                 --upload-file ${params.NEXUS_ARTIFACT_ID}-${env.NEXUS_ARTIFACT_VERSION}.zip \
