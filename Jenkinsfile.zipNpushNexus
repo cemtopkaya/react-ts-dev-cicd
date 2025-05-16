@@ -93,33 +93,49 @@ pipeline {
             }
             steps {
                 script {
-                    // Zip the artifact
-                    sh """
-                        # dist/ dizinini ZIP'le
-                        zip -r ${NEXUS_ARTIFACT_ID}-${NEXUS_ARTIFACT_VERSION}.zip dist/
 
-                        echo 'Nexus'a Maven formatında yükle'
-                        curl -v -u ${NEXUS_USER}:${NEXUS_PASSWORD} \
-                            --upload-file ${NEXUS_ARTIFACT_ID}-${NEXUS_ARTIFACT_VERSION}.zip \
-                            "${NEXUS_URL}/repository/${NEXUS_REPO}/${NEXUS_GROUP//.//}/${NEXUS_ARTIFACT_ID}/${NEXUS_ARTIFACT_VERSION}/${NEXUS_ARTIFACT_ID}-${NEXUS_ARTIFACT_VERSION}.zip"
-                    """
+                    withcredentials([usernamePassword(credentialsId: "${params.NEXUS_CRED_ID}", passwordVariable: 'NEXUS_PASSWORD', usernameVariable: 'NEXUS_USER')]) {
+
+                        // Set the version
+                        def version = "${NEXUS_ARTIFACT_VERSION}"
+
+                        // Print the version
+                        echo "Version: ${version}"
+
+                        // Print the Nexus URL
+                        echo "Nexus URL: ${NEXUS_URL}"
+
+                        // Print the Nexus credentials
+                        echo "Nexus User: ${NEXUS_USER}"
+
+                        // Zip the artifact
+                        sh """
+                            # dist/ dizinini ZIP'le
+                            zip -r ${NEXUS_ARTIFACT_ID}-${NEXUS_ARTIFACT_VERSION}.zip dist/
+
+                            echo 'Nexus'a Maven formatında yükle'
+                            curl -v -u ${NEXUS_USER}:${NEXUS_PASSWORD} \
+                                --upload-file ${NEXUS_ARTIFACT_ID}-${NEXUS_ARTIFACT_VERSION}.zip \
+                                "${NEXUS_URL}/repository/${NEXUS_REPO}/${NEXUS_GROUP//.//}/${NEXUS_ARTIFACT_ID}/${NEXUS_ARTIFACT_VERSION}/${NEXUS_ARTIFACT_ID}-${NEXUS_ARTIFACT_VERSION}.zip"
+                        """
+                    }
 
                     // Push to Nexus
-                    nexusArtifactUploader(
-                        nexusVersion: 'nexus3',
-                        protocol: 'http',
-                        nexusUrl: "${params.NEXUS_URL}",
-                        groupId: "${params.NEXUS_GROUP}",
-                        version: version,
-                        repository: "${params.NEXUS_REPO}",
-                        credentialsId: "${params.NEXUS_CRED_ID}",
-                        artifacts: [
-                            [artifactId: "${params.NEXUS_ARTIFACT}",
-                            classifier: '',
-                            file: "${NEXUS_ARTIFACT_ID}-${NEXUS_ARTIFACT_VERSION}.zip",
-                            type: 'zip']
-                        ]
-                    )
+                    // nexusArtifactUploader(
+                    //     nexusVersion: 'nexus3',
+                    //     protocol: 'http',
+                    //     nexusUrl: "${params.NEXUS_URL}",
+                    //     groupId: "${params.NEXUS_GROUP}",
+                    //     version: version,
+                    //     repository: "${params.NEXUS_REPO}",
+                    //     credentialsId: "${params.NEXUS_CRED_ID}",
+                    //     artifacts: [
+                    //         [artifactId: "${params.NEXUS_ARTIFACT}",
+                    //         classifier: '',
+                    //         file: "${NEXUS_ARTIFACT_ID}-${NEXUS_ARTIFACT_VERSION}.zip",
+                    //         type: 'zip']
+                    //     ]
+                    // )
 
                 }
             }
