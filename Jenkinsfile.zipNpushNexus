@@ -14,9 +14,6 @@ pipeline {
     }
 
     parameters {
-        separator(name: 'jenkins_settings', sectionHeader: 'JENKINS SETTINGS')
-        booleanParam(name: 'DEBUG', defaultValue: true, description: 'Enable debug mode')
-
         separator(name: 'git_settings', sectionHeader: 'GIT SETTINGS')
         string(name: 'GIT_URL', defaultValue: 'file:///tmp/code-repo', description: 'Git URL')
         string(name: 'GIT_BRANCH', defaultValue: 'main', description: 'Main branch of repository')
@@ -67,9 +64,6 @@ pipeline {
         }
 
         stage('Zip and Upload to Nexus') {
-            environment {
-                NEXUS_ARTIFACT_VERSION = '1.0.0'
-            }
             steps {
                 script {
                     withCredentials([usernamePassword(
@@ -82,17 +76,17 @@ pipeline {
                             if [ -z "${NEXUS_ARTIFACT_ID}" ]; then
                                 export NEXUS_ARTIFACT_ID=`jq -r .name package.json`
                             fi
-                            if [ -z "${NEXUS_ARTIFACT_VERSION}" ]; then
+                            if [ -z "${params.NEXUS_ARTIFACT_VERSION}" ]; then
                                 export NEXUS_ARTIFACT_VERSION=`jq -r .version package.json`
                             fi
 
-                            echo "Artifact ID: ${NEXUS_ARTIFACT_ID}"
-                            echo "Artifact Version: ${NEXUS_ARTIFACT_VERSION}"
+                            echo "Artifact ID: \$NEXUS_ARTIFACT_ID"
+                            echo "Artifact Version: $NEXUS_ARTIFACT_VERSION"
                             echo "Nexus URL: ${params.NEXUS_URL}"
                             echo "Nexus Repository: ${params.NEXUS_REPO}"
                             echo "Nexus Group: ${params.NEXUS_GROUP}"
 
-                            zip -r ${env.NEXUS_ARTIFACT_ID}-${env.NEXUS_ARTIFACT_VERSION}.zip dist/
+                            zip -r \$NEXUS_ARTIFACT_ID-\$NEXUS_ARTIFACT_VERSION.zip dist/
 
                             # Upload to Nexus
                             curl -v -u ${env.NEXUS_USER}:${env.NEXUS_PASS} \
