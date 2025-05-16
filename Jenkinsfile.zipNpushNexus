@@ -67,6 +67,21 @@ pipeline {
             }
         }
 
+        stage('Install Dependencies') {
+            steps {
+                script {
+                    sh 'npm install'
+                }
+            }
+        }
+        stage('Build') {
+            steps {
+                script {
+                    sh 'npm run build'
+                }
+            }
+        }
+
         stage('Zip and upload the artifact to Nexus') {
             environment {
                 NEXUS_URL = "${params.NEXUS_URL}"
