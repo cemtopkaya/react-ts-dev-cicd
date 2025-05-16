@@ -76,16 +76,18 @@ pipeline {
                         passwordVariable: 'NEXUS_PASS'
                     )]) {
                         // Zip the artifact
+                        sh 'printenv'
+                        sh 'jq -r .name package.json'
+
                         sh """
                             if [ -z "${env.NEXUS_ARTIFACT_ID}" ]; then
-                                env
                                 echo "Artifact ID env: ${env.NEXUS_ARTIFACT_ID}"
                                 jq -r .name package.json
                                 export NEXUS_ARTIFACT_ID=`jq -r .name package.json`
-
                                 echo "Artifact ID: \$NEXUS_ARTIFACT_ID"
                                 echo "Artifact ID env: ${env.NEXUS_ARTIFACT_ID}"
                             fi
+
                             if [ -z "${env.NEXUS_ARTIFACT_VERSION}" ]; then
                                 export NEXUS_ARTIFACT_VERSION=`jq -r .version package.json`
                             fi
