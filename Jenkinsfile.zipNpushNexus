@@ -97,6 +97,11 @@ pipeline {
                     sh """
                         # dist/ dizinini ZIP'le
                         zip -r ${NEXUS_ARTIFACT_ID}-${NEXUS_ARTIFACT_VERSION}.zip dist/
+
+                        echo 'Nexus'a Maven formatında yükle'
+                        curl -v -u ${NEXUS_USER}:${NEXUS_PASSWORD} \
+                            --upload-file ${NEXUS_ARTIFACT_ID}-${NEXUS_ARTIFACT_VERSION}.zip \
+                            "${NEXUS_URL}/repository/${NEXUS_REPO}/${NEXUS_GROUP//.//}/${NEXUS_ARTIFACT_ID}/${NEXUS_ARTIFACT_VERSION}/${NEXUS_ARTIFACT_ID}-${NEXUS_ARTIFACT_VERSION}.zip"
                     """
 
                     // Push to Nexus
@@ -116,12 +121,6 @@ pipeline {
                         ]
                     )
 
-                    // sh '''
-                    //     # Nexus'a Maven formatında yükle
-                    //     curl -v -u ${NEXUS_USER}:${NEXUS_PASSWORD} \
-                    //         --upload-file ${ARTIFACT_ID}-${VERSION}.zip \
-                    //         "${NEXUS_URL}/repository/${REPO_NAME}/${GROUP_ID//.//}/${ARTIFACT_ID}/${VERSION}/${ARTIFACT_ID}-${VERSION}.zip"
-                    // '''
                 }
             }
         }
