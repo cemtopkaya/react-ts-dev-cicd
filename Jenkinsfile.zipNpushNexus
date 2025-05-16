@@ -33,7 +33,7 @@ pipeline {
         separator(name: 'nexus_settings', sectionHeader: 'NEXUS SETTINGS')
         string(name: 'NEXUS_URL', defaultValue: 'http://nexus:8081', description: 'Nexus server URL')
         string(name: 'NEXUS_CRED_ID', defaultValue: 'nexus-cred', description: 'Nexus credentials ID')
-        string(name: 'NEXUS_REPO', defaultValue: 'maven-releases', description: 'Nexus repository (e.g., maven-releases or maven-snapshots)')
+        string(name: 'NEXUS_REPO', defaultValue: 'zip-archive', description: 'Nexus repository (e.g., maven-releases or maven-snapshots)')
         string(name: 'NEXUS_GROUP', defaultValue: 'com.telenity.portal', description: 'Nexus group (e.g., com.example)')
         string(name: 'NEXUS_ARTIFACT_ID', defaultValue: 'portal-web', description: 'Nexus artifact ID (e.g., my-frontend)')
     }
