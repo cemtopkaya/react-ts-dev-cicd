@@ -10,6 +10,7 @@ RUN apt-get update && \
         curl \
         net-tools \
         tree \
+        zip \
         nano \
         openjdk-17-jre-headless \
         docker.io
