@@ -64,6 +64,10 @@ pipeline {
         }
 
         stage('Zip and Upload to Nexus') {
+            environment {
+                NEXUS_ARTIFACT_ID = "${params.NEXUS_ARTIFACT_ID}"
+                NEXUS_ARTIFACT_VERSION = "${params.NEXUS_ARTIFACT_VERSION}"
+            }
             steps {
                 script {
                     withCredentials([usernamePassword(
@@ -73,10 +77,10 @@ pipeline {
                     )]) {
                         // Zip the artifact
                         sh """
-                            if [ -z "${params.NEXUS_ARTIFACT_ID}" ]; then
+                            if [ -z "${env.NEXUS_ARTIFACT_ID}" ]; then
                                 export NEXUS_ARTIFACT_ID=`jq -r .name package.json`
                             fi
-                            if [ -z "${params.NEXUS_ARTIFACT_VERSION}" ]; then
+                            if [ -z "${env.NEXUS_ARTIFACT_VERSION}" ]; then
                                 export NEXUS_ARTIFACT_VERSION=`jq -r .version package.json`
                             fi
 
