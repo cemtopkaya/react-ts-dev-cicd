@@ -1,168 +1,94 @@
-/* groovylint-disable-next-line CompileStatic */
 pipeline {
     agent {
         dockerfile {
             filename 'Dockerfile.build'
             dir '.devcontainer'
             label 'master-jenkins'
-            additionalBuildArgs  '--build-arg version=1.0.2'
+            additionalBuildArgs '--build-arg version=1.0.2'
             args '-v /tmp:/tmp -v /var/run/docker.sock:/var/run/docker.sock --network=devnet'
         }
     }
 
     options {
-        // Otomatik checkout istemiyorsak yani elle checkout yapacaksak skipDefaultCheckout(true)
-        // Otomatik checkout yapılacaksa yani (Pipeline script from SCM/Multibranch ise) skipDefaultCheckout(true),
         skipDefaultCheckout(false)
     }
 
     parameters {
-        separator(name: 'git_settings', sectionHeader: 'GIT SETTTINGS')
+        separator(name: 'git_settings', sectionHeader: 'GIT SETTINGS')
         string(name: 'GIT_URL', defaultValue: 'file:///tmp/code-repo', description: 'Git URL')
-        // string(name: 'GIT_URL', defaultValue: 'https://github.com/cemtopkaya/react-ts-dev-cicd.git', description: 'Git URL')
         string(name: 'GIT_BRANCH', defaultValue: 'main', description: 'Main branch of repository')
-        string(name: 'GIT_SOURCE_BRANCH', defaultValue: 'feature/jenkins', description: 'Source branch to merge from')
-        string(name: 'GIT_TARGET_BRANCH', defaultValue: 'main', description: 'Target branch to merge into')
         string(name: 'GIT_CRED_ID', defaultValue: '', description: 'Git credentials ID')
-
-        separator(name: 'docker_settings', sectionHeader: 'DOCKER SETTTINGS')
-        string(name: 'DOCKER_CRED_ID', defaultValue: 'jenkins-docker-cred', description: 'Docker credential')
-        string(name: 'DOCKER_IMAGE', defaultValue: 'telenity/admin-portal:1.1.1', description: 'Docker image name')
-        string(name: 'DOCKER_REGISTRY', defaultValue: 'docker.telenity.com', description: 'Docker registry URL')
 
         separator(name: 'nexus_settings', sectionHeader: 'NEXUS SETTINGS')
         string(name: 'NEXUS_URL', defaultValue: 'http://nexus:8081', description: 'Nexus server URL')
         string(name: 'NEXUS_CRED_ID', defaultValue: 'nexus-cred', description: 'Nexus credentials ID')
-        string(name: 'NEXUS_REPO', defaultValue: 'zip-archive', description: 'Nexus repository (e.g., maven-releases or maven-snapshots)')
-        string(name: 'NEXUS_GROUP', defaultValue: 'com.telenity.portal', description: 'Nexus group (e.g., com.example)')
-        string(name: 'NEXUS_ARTIFACT_ID', defaultValue: 'portal-web', description: 'Nexus artifact ID (e.g., my-frontend)')
+        string(name: 'NEXUS_REPO', defaultValue: 'zip-archive', description: 'Nexus repository')
+        string(name: 'NEXUS_GROUP', defaultValue: 'com.telenity.portal', description: 'Nexus group')
+        string(name: 'NEXUS_ARTIFACT_ID', defaultValue: 'portal-web', description: 'Nexus artifact ID')
     }
 
     environment {
         GIT_URL = "${params.GIT_URL}"
         GIT_BRANCH = "${params.GIT_BRANCH}"
+        NEXUS_ARTIFACT_VERSION = '1.0.0'
     }
 
     stages {
-
         stage('Checkout Code') {
             steps {
                 script {
                     echo "Checking out from ${env.GIT_URL} on branch ${env.GIT_BRANCH}"
-
-                    // Option 1: Use the git step (simpler)
-                    if (params.GIT_CRED_ID?.trim()) {
-                        git(
+                    checkout([
+                        $class: 'GitSCM',
+                        branches: [[name: env.GIT_BRANCH]],
+                        extensions: [],
+                        userRemoteConfigs: [[
                             url: env.GIT_URL,
-                            branch: env.GIT_BRANCH,
-                            credentialsId: params.GIT_CRED_ID
-                        )
-                    } else {
-                        git(
-                            url: env.GIT_URL,
-                            branch: env.GIT_BRANCH
-                        )
-                    }
+                            credentialsId: params.GIT_CRED_ID ?: null
+                        ]]
+                    ])
                 }
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                script {
-                    sh 'npm install'
-                }
+                sh 'npm install'
             }
         }
+
         stage('Build') {
             steps {
-                script {
-                    sh 'npm run build'
-                }
+                sh 'npm run build'
             }
         }
 
-        stage('Zip and upload the artifact to Nexus') {
-            environment {
-                NEXUS_URL = "${params.NEXUS_URL}"
-                NEXUS_CRED_ID = "${params.NEXUS_CRED_ID}"
-                NEXUS_REPO = "${params.NEXUS_REPO}" // "maven-releases" veya "maven-snapshots" gibi
-                NEXUS_GROUP = "${params.NEXUS_GROUP}" // "com.example" gibi
-                NEXUS_ARTIFACT_ID = "${params.NEXUS_ARTIFACT_ID}" // "my-frontend" gibi
-                NEXUS_ARTIFACT_VERSION = '1.0.0'
-            }
+        stage('Zip and Upload to Nexus') {
             steps {
                 script {
-
-                    withcredentials([usernamePassword(credentialsId: "${params.NEXUS_CRED_ID}", passwordVariable: 'NEXUS_PASSWORD', usernameVariable: 'NEXUS_USER')]) {
-
-                        // Set the version
-                        def version = "${NEXUS_ARTIFACT_VERSION}"
-
-                        // Print the version
-                        echo "Version: ${version}"
-
-                        // Print the Nexus URL
-                        echo "Nexus URL: ${NEXUS_URL}"
-
-                        // Print the Nexus credentials
-                        echo "Nexus User: ${NEXUS_USER}"
-
+                    withCredentials([usernamePassword(
+                        credentialsId: params.NEXUS_CRED_ID,
+                        usernameVariable: 'NEXUS_USER',
+                        passwordVariable: 'NEXUS_PASS'
+                    )]) {
                         // Zip the artifact
                         sh """
-                            # dist/ dizinini ZIP'le
-                            zip -r ${NEXUS_ARTIFACT_ID}-${NEXUS_ARTIFACT_VERSION}.zip dist/
-
-                            echo 'Nexus'a Maven formatında yükle'
-                            curl -v -u ${NEXUS_USER}:${NEXUS_PASSWORD} \
-                                --upload-file ${NEXUS_ARTIFACT_ID}-${NEXUS_ARTIFACT_VERSION}.zip \
-                                "${NEXUS_URL}/repository/${NEXUS_REPO}/${NEXUS_GROUP//.//}/${NEXUS_ARTIFACT_ID}/${NEXUS_ARTIFACT_VERSION}/${NEXUS_ARTIFACT_ID}-${NEXUS_ARTIFACT_VERSION}.zip"
+                            zip -r ${params.NEXUS_ARTIFACT_ID}-${env.NEXUS_ARTIFACT_VERSION}.zip dist/
+                            
+                            # Upload to Nexus
+                            curl -v -u ${env.NEXUS_USER}:${env.NEXUS_PASS} \
+                                --upload-file ${params.NEXUS_ARTIFACT_ID}-${env.NEXUS_ARTIFACT_VERSION}.zip \
+                                "${params.NEXUS_URL}/repository/${params.NEXUS_REPO}/${params.NEXUS_GROUP.replace('.', '/')}/${params.NEXUS_ARTIFACT_ID}/${env.NEXUS_ARTIFACT_VERSION}/${params.NEXUS_ARTIFACT_ID}-${env.NEXUS_ARTIFACT_VERSION}.zip"
                         """
                     }
-
-                    // Push to Nexus
-                    // nexusArtifactUploader(
-                    //     nexusVersion: 'nexus3',
-                    //     protocol: 'http',
-                    //     nexusUrl: "${params.NEXUS_URL}",
-                    //     groupId: "${params.NEXUS_GROUP}",
-                    //     version: version,
-                    //     repository: "${params.NEXUS_REPO}",
-                    //     credentialsId: "${params.NEXUS_CRED_ID}",
-                    //     artifacts: [
-                    //         [artifactId: "${params.NEXUS_ARTIFACT}",
-                    //         classifier: '',
-                    //         file: "${NEXUS_ARTIFACT_ID}-${NEXUS_ARTIFACT_VERSION}.zip",
-                    //         type: 'zip']
-                    //     ]
-                    // )
-
                 }
             }
         }
-
     }
-    // Buraya tekrar bakılacak: https://www.jenkins.io/doc/book/pipeline/syntax/#post-conditions
-    post {
-        success {
-            echo 'Pipeline completed successfully!'
-        }
-        failure {
-            echo 'Pipeline failed!'
-        }
-        always {
-            echo 'Cleaning up...'
-            // cleanWs()
 
-        // cleanWs(cleanWhenNotBuilt: false,
-        //         deleteDirs: true,
-        //         disableDeferredWipeout: true,
-        //         notFailBuild: true,
-        //         patterns: [[pattern: '.gitignore', type: 'INCLUDE'],
-        //                    [pattern: '.propsfile', type: 'EXCLUDE']])
-        }
-        unstable {
-            echo 'Pipeline is unstable!'
+    post {
+        always {
+            echo 'Pipeline completed. Cleaning up...'
         }
     }
 }
