@@ -19,7 +19,7 @@ pipeline {
         string(name: 'GIT_BRANCH', defaultValue: 'main', description: 'Main branch of repository')
         string(name: 'GIT_CRED_ID', defaultValue: '', description: 'Git credentials ID')
 
-        separator(name: 'nexus_settings', sectionHeader: 'NEXUS SETTINGS')
+        separator(name: 'nexus_settings', sectionHeader: 'NEXUS ZIP REPOSITORY SETTINGS')
         string(name: 'NEXUS_URL', defaultValue: 'http://nexus:8081', description: 'Nexus server URL')
         string(name: 'NEXUS_CRED_ID', defaultValue: 'nexus-cred', description: 'Nexus credentials ID')
         string(name: 'NEXUS_REPO', defaultValue: 'zip-archive', description: 'Nexus repository')
