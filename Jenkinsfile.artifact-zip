@@ -1,0 +1,107 @@
+pipeline {
+    agent {
+        dockerfile {
+            filename 'Dockerfile.build'
+            dir '.devcontainer'
+            label 'master-jenkins'
+            additionalBuildArgs '--build-arg version=1.0.2'
+            args '-v /tmp:/tmp -v /var/run/docker.sock:/var/run/docker.sock --network=devnet'
+        }
+    }
+
+    options {
+        skipDefaultCheckout(false)
+    }
+
+    parameters {
+        separator(name: 'git_settings', sectionHeader: 'GIT SETTINGS')
+        string(name: 'GIT_URL', defaultValue: 'file:///tmp/code-repo', description: 'Git URL')
+        string(name: 'GIT_BRANCH', defaultValue: 'main', description: 'Main branch of repository')
+        string(name: 'GIT_CRED_ID', defaultValue: '', description: 'Git credentials ID')
+
+        separator(name: 'nexus_settings', sectionHeader: 'NEXUS SETTINGS')
+        string(name: 'NEXUS_URL', defaultValue: 'http://nexus:8081', description: 'Nexus server URL')
+        string(name: 'NEXUS_CRED_ID', defaultValue: 'nexus-cred', description: 'Nexus credentials ID')
+        string(name: 'NEXUS_REPO', defaultValue: 'zip-archive', description: 'Nexus repository')
+        string(name: 'NEXUS_GROUP', defaultValue: 'com.telenity.portal', description: 'Nexus group')
+        string(name: 'NEXUS_ARTIFACT_ID', defaultValue: '', description: 'Nexus artifact ID (e.g. portal-web). If not provided, it will be read from package.json')
+        string(name: 'NEXUS_ARTIFACT_VERSION', defaultValue: '', description: 'Version of the artifact (e.g. 1.0.0). If not provided, it will be read from package.json')
+    }
+
+    environment {
+        GIT_URL = "${params.GIT_URL}"
+        GIT_BRANCH = "${params.GIT_BRANCH}"
+    }
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                script {
+                    echo "Checking out from ${env.GIT_URL} on branch ${env.GIT_BRANCH}"
+                    checkout([
+                        $class: 'GitSCM',
+                        branches: [[name: env.GIT_BRANCH]],
+                        extensions: [],
+                        userRemoteConfigs: [[
+                            url: env.GIT_URL,
+                            credentialsId: params.GIT_CRED_ID ?: null
+                        ]]
+                    ])
+                }
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                sh 'npm install'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'npm run build'
+            }
+        }
+
+        stage('Zip and Upload to Nexus') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(
+                        credentialsId: params.NEXUS_CRED_ID,
+                        usernameVariable: 'NEXUS_USER',
+                        passwordVariable: 'NEXUS_PASS'
+                    )]) {
+                        // properties içinde değer verilmemişse package.json'dan değerleri oku
+                        artifactId = params.NEXUS_ARTIFACT_ID ?: sh(script: 'jq -r .name package.json', returnStdout: true).trim()
+                        artifactVersion = params.NEXUS_ARTIFACT_VERSION ?: sh(script: 'jq -r .version package.json', returnStdout: true).trim()
+
+                        echo "Artifact ID: ${artifactId}"
+                        echo "Artifact Version: ${artifactVersion}"
+
+                        sh """
+                            printenv
+                            echo "Artifact ID: ${artifactId}"
+                            echo "Artifact Version: ${artifactVersion}"
+                            echo "Nexus URL: ${params.NEXUS_URL}"
+                            echo "Nexus Repository: ${params.NEXUS_REPO}"
+                            echo "Nexus Group: ${params.NEXUS_GROUP}"
+
+                            zip -r ${artifactId}-${artifactVersion}.zip dist/
+
+                            # Upload to Nexus
+                            curl -v -u ${env.NEXUS_USER}:${env.NEXUS_PASS} \\
+                                --upload-file ${artifactId}-${artifactVersion}.zip \\
+                                "${params.NEXUS_URL}/repository/${params.NEXUS_REPO}/${params.NEXUS_GROUP.replace('.', '/')}/${artifactId}/${artifactVersion}/${artifactId}-${artifactVersion}.zip"
+                        """
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Pipeline completed. Cleaning up...'
+        }
+    }
+}

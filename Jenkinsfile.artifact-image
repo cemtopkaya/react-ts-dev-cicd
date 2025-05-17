@@ -1,0 +1,115 @@
+pipeline {
+    agent {
+        dockerfile {
+            filename 'Dockerfile.build'
+            dir '.devcontainer'
+            label 'master-jenkins'
+            additionalBuildArgs '--build-arg version=1.0.2'
+            args '-v /tmp:/tmp -v /var/run/docker.sock:/var/run/docker.sock --network=devnet'
+        }
+    }
+
+    options {
+        skipDefaultCheckout(false)
+    }
+
+    parameters {
+        separator(name: 'git_settings', sectionHeader: 'GIT SETTINGS')
+        string(name: 'GIT_URL', defaultValue: 'file:///tmp/code-repo', description: 'Git URL')
+        string(name: 'GIT_BRANCH', defaultValue: 'main', description: 'Main branch of repository')
+        string(name: 'GIT_CRED_ID', defaultValue: '', description: 'Git credentials ID')
+
+        separator(name: 'nexus_settings', sectionHeader: 'NEXUS SETTINGS')
+        string(name: 'NEXUS_URL', defaultValue: 'http://nexus:8081', description: 'Nexus server URL')
+        string(name: 'NEXUS_CRED_ID', defaultValue: 'nexus-cred', description: 'Nexus credentials ID')
+        string(name: 'NEXUS_REPO', defaultValue: 'zip-archive', description: 'Nexus repository')
+        string(name: 'NEXUS_GROUP', defaultValue: 'com.telenity.portal', description: 'Nexus group')
+        string(name: 'NEXUS_ARTIFACT_ID', defaultValue: '', description: 'Nexus artifact ID (e.g. portal-web). If not provided, it will be read from package.json')
+        string(name: 'NEXUS_ARTIFACT_VERSION', defaultValue: '', description: 'Version of the artifact (e.g. 1.0.0). If not provided, it will be read from package.json')
+    }
+
+    environment {
+        GIT_URL = "${params.GIT_URL}"
+        GIT_BRANCH = "${params.GIT_BRANCH}"
+    }
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                script {
+                    echo "Checking out from ${env.GIT_URL} on branch ${env.GIT_BRANCH}"
+                    checkout([
+                        $class: 'GitSCM',
+                        branches: [[name: env.GIT_BRANCH]],
+                        extensions: [],
+                        userRemoteConfigs: [[
+                            url: env.GIT_URL,
+                            credentialsId: params.GIT_CRED_ID ?: null
+                        ]]
+                    ])
+                }
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                sh 'npm install'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'npm run build'
+            }
+        }
+
+        stage('Build-Scan-Push Docker Image') {
+            steps {
+                // Docker build
+                // Trivia: https://www.jenkins.io/doc/book/pipeline/syntax/#docker
+                // and push
+                script {
+                    dir("${WORKSPACE}/release") {
+                        sh "docker build -t ${params.DOCKER_IMAGE} ."
+
+                        // --skip-update : "update database" ile uğraşmasın
+                        // --severity HIGH,CRITICAL: sadece yüksek riskli açıklar gelsin
+                        // --format json --output report.json: Raporu JSON formatında al
+                        // --no-progress: Ekranda gereksiz loading barı çıkmasın
+                        // --exit-code 1: Eğer hata bulursa exit 1 yapar ve Jenkins stage'ı FAIL olsun
+                        scanExitCode = sh(
+                            script: """
+                                trivy image \
+                                    --severity HIGH,CRITICAL \
+                                    --ignore-unfixed \
+                                    --no-progress \
+                                    --skip-update \
+                                    --exit-code 1 \
+                                    ${params.DOCKER_IMAGE}
+                            """,
+                            returnStatus: true // Return exit code but don't fail the build
+                        )
+
+                        // Raporu JSON formatında al ve ekrana yazdır (tee komutu ile)
+                        sh "trivy image --format json ${params.DOCKER_IMAGE} | tee trivy-report.json"
+
+                        if (scanExitCode != 0) {
+                            error("Trivy scan failed with exit code ${scanExitCode}")
+                        }
+
+                        // Push Docker image to registry
+                        docker.withRegistry("https://${params.DOCKER_REGISTRY}", "${params.DOCKER_CREDENTIALS_ID}") {
+                            sh "docker push ${params.DOCKER_IMAGE}"
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Pipeline completed. Cleaning up...'
+        }
+    }
+}
