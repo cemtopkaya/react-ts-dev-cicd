@@ -6,7 +6,6 @@ pipeline {
             dir '.devcontainer'
             label 'master-jenkins'
             additionalBuildArgs  '--build-arg version=1.0.2'
-            reuseNode true
             args '-v /tmp:/tmp -v /var/run/docker.sock:/var/run/docker.sock --network=devnet'
         }
     }
@@ -19,7 +18,8 @@ pipeline {
 
     parameters {
         separator(name: 'git_settings', sectionHeader: 'GIT SETTTINGS')
-        string(name: 'GIT_URL', defaultValue: 'https://github.com/cemtopkaya/react-ts-dev-cicd.git', description: 'Git URL')
+        string(name: 'GIT_URL', defaultValue: 'file:///tmp/code-repo', description: 'Git URL')
+        // string(name: 'GIT_URL', defaultValue: 'https://github.com/cemtopkaya/react-ts-dev-cicd.git', description: 'Git URL')
         string(name: 'GIT_BRANCH', defaultValue: 'main', description: 'Main branch of repository')
         string(name: 'GIT_SOURCE_BRANCH', defaultValue: 'feature/jenkins', description: 'Source branch to merge from')
         string(name: 'GIT_TARGET_BRANCH', defaultValue: 'main', description: 'Target branch to merge into')
@@ -30,12 +30,30 @@ pipeline {
         string(name: 'SQ_CRED_ID', defaultValue: 'jenkins-sonar', description: 'SonarQube credential')
         string(name: 'SQ_PROJECT_KEY', defaultValue: 'react-diff', description: 'SonarQube project key')
         string(name: 'SQ_PROJECT_NAME', defaultValue: 'React Diff', description: 'SonarQube project name')
+
+        separator(name: 'nexus_settings', sectionHeader: 'NEXUS COMMON SETTINGS')
+        string(name: 'NEXUS_URL', defaultValue: 'http://nexus:8081', description: 'Nexus server URL')
+        string(name: 'NEXUS_CRED_ID', defaultValue: '', description: 'Nexus credentials ID')
+        string(name: 'NEXUS_GROUP', defaultValue: 'com.telenity.portal', description: 'Nexus group (e.g., com.example)')
+        string(name: 'NEXUS_ARTIFACT_ID', defaultValue: '', description: 'Nexus artifact ID (e.g. portal-web). If not provided, it will be read from package.json')
+        string(name: 'NEXUS_ARTIFACT_VERSION', defaultValue: '', description: 'Version of the artifact (e.g. 1.0.0). If not provided, it will be read from package.json')
+
+        separator(name: 'nexus_settings', sectionHeader: 'NEXUS ZIP REPOSITORY SETTINGS')
+        string(name: 'NEXUS_REPO', defaultValue: '', description: 'Nexus repository (e.g., maven-releases or maven-snapshots)')
+
+        separator(name: 'nexus_docker_settings', sectionHeader: 'NEXUS DDOCKER REGISTRY SETTINGS')
+        string(name: 'NEXUS_DOCKER_REGISTRY', defaultValue: 'nexus:8081', description: 'Nexus docker registry URL')
+        string(name: 'DOCKER_IMAGE_NAME', defaultValue: 'nexus:8081/telenity/portal/admin-portal:latest', description: 'Docker image name (e.g. com.telenity.portal/portal-web:latest). If not provided, it will be read from package.json')
     }
 
     environment {
         GIT_URL = "${params.GIT_URL}"
         GIT_BRANCH = "${params.GIT_BRANCH}"
     }
+
+    // tools {
+    //     sonarQubeScanner 'SonarQube Scanner 4.8.0.2856'
+    // }
 
     stages {
         stage('Clean Workspace') {
@@ -49,6 +67,7 @@ pipeline {
                 script {
                     echo "Checking out from ${env.GIT_URL} on branch ${env.GIT_BRANCH}"
 
+                    // Option 1: Use the git step (simpler)
                     if (params.GIT_CRED_ID?.trim()) {
                         git(
                             url: env.GIT_URL,
@@ -65,6 +84,21 @@ pipeline {
             }
         }
 
+        stage('Install Dependencies') {
+            steps {
+                script {
+                    sh 'npm install'
+                }
+            }
+        }
+        stage('Build') {
+            steps {
+                script {
+                    sh 'npm run build'
+                }
+            }
+        }
+
         stage('SonarQube scan') {
             steps {
                 script {
@@ -75,8 +109,17 @@ pipeline {
                         +
                         sonar-cicd.properties dosyasının bilgilerini de scanner'a inject edin.
                     */
-
+                    
+                    // Sonarqube analizini başlat
                     sh 'npm run sonar:cicd'
+                }
+            }
+        }
+
+        stage('SonarQube Quality Gate') {
+            steps {
+                script {
+                    // Sonarqube quality gate kontrolü
                     def envVars = readProperties file: '.env.cicd'
                     def SONAR_TOKEN = envVars['SONAR_TOKEN']
                     def SONAR_HOST_URL = envVars['SONAR_HOST_URL']
@@ -108,9 +151,193 @@ pipeline {
                     if (json.projectStatus.status == 'ERROR') {
                         error("SonarQube Quality Gate failed: status is ${json.projectStatus.status}")
                     }
-
                 }
             }
+        }
+
+        stage('Run Tests') {
+            steps {
+                script {
+                    sh 'npm run test:run:coverage'
+                }
+            }
+        }
+        stage('Coverage Check') {
+            steps {
+                script {
+                    sh 'npm run coverage:newcode'
+                }
+            }
+        }
+
+        stage('Zip and upload the artifact to Nexus') {
+            environment {
+                NEXUS_URL = "${params.NEXUS_URL}"
+                NEXUS_CRED_ID = "${params.NEXUS_CRED_ID}"
+                NEXUS_REPO = "${params.NEXUS_REPO}" // "maven-releases" veya "maven-snapshots" gibi
+                NEXUS_GROUP = "${params.NEXUS_GROUP}" // "com.example" gibi
+                NEXUS_ARTIFACT_ID = "${params.NEXUS_ARTIFACT_ID}" // "my-frontend" gibi
+                NEXUS_ARTIFACT_VERSION = "1.0.0" 
+            }
+            steps {
+                script {
+                    // Zip the artifact
+                    sh """
+                        # dist/ dizinini ZIP'le
+                        zip -r ${NEXUS_ARTIFACT_ID}-${NEXUS_ARTIFACT_VERSION}.zip dist/
+                    """
+
+                    // Push to Nexus
+                    nexusArtifactUploader(
+                        nexusVersion: 'nexus3',
+                        protocol: 'http',
+                        nexusUrl: "${params.NEXUS_URL}",
+                        groupId: "${params.NEXUS_GROUP}",
+                        version: version,
+                        repository: "${params.NEXUS_REPO}",
+                        credentialsId: "${params.NEXUS_CRED_ID}",
+                        artifacts: [
+                            [artifactId: "${params.NEXUS_ARTIFACT}",
+                            classifier: '',
+                            file: "${NEXUS_ARTIFACT_ID}-${NEXUS_ARTIFACT_VERSION}.zip",
+                            type: 'zip']
+                        ]
+                    )
+
+                    // sh '''
+                    //     # Nexus'a Maven formatında yükle
+                    //     curl -v -u ${NEXUS_USER}:${NEXUS_PASSWORD} \
+                    //         --upload-file ${ARTIFACT_ID}-${VERSION}.zip \
+                    //         "${NEXUS_URL}/repository/${REPO_NAME}/${GROUP_ID//.//}/${ARTIFACT_ID}/${VERSION}/${ARTIFACT_ID}-${VERSION}.zip"
+                    // '''
+                }
+            }
+        }
+
+        stage('Build-Scan-Push Docker Image') {
+            steps {
+                // ---------------------------------------------------
+                // Docker image build
+                // Docker image scan using Trivy: 
+                //    https://www.jenkins.io/doc/book/pipeline/syntax/#docker
+                // Docker push to Nexus
+                // ---------------------------------------------------
+                script {
+                    dir("${WORKSPACE}/.release") {
+
+                        // properties içinde değer verilmemişse package.json'dan değerleri oku
+                        def artifactId = params.NEXUS_ARTIFACT_ID ?: sh(script: 'jq -r .name ../package.json', returnStdout: true).trim()
+                        def artifactVersion = params.NEXUS_ARTIFACT_VERSION ?: sh(script: 'jq -r .version ../package.json', returnStdout: true).trim()
+                        // def groupPath = params.NEXUS_GROUP.replace('.', '/')
+                        def groupPath = params.NEXUS_GROUP
+
+                        def dockerImageName = params.DOCKER_IMAGE_NAME ?: "${params.NEXUS_DOCKER_REGISTRY}/${groupPath}/${artifactId}:${artifactVersion}"
+
+                        sh """
+                            cp -r ../dist/ ./
+                            pwd
+                            ls -al .
+                            docker images
+                            docker build \
+                                -t ${dockerImageName} \
+                                -f Dockerfile.release \
+                                .
+                            docker images
+                        """
+
+                        // --------------- Trivy scan -------------------------
+                        // --skip-update : "update database" ile uğraşmasın
+                        // --severity HIGH,CRITICAL: sadece yüksek riskli açıklar gelsin
+                        // --format json --output report.json: Raporu JSON formatında al
+                        // --no-progress: Ekranda gereksiz loading barı çıkmasın
+                        // --exit-code 1: Eğer hata bulursa exit 1 yapar ve Jenkins stage'ı FAIL olsun
+                        // -----------------------------------------------------
+                        
+                        def scanExitCode = sh(
+                            script: """
+                                trivy image \
+                                    --ignorefile .trivyignore \
+                                    --severity HIGH,CRITICAL \
+                                    --ignore-unfixed \
+                                    --no-progress \
+                                    --exit-code 1 \
+                                    ${dockerImageName}
+                            """,
+                            returnStatus: true // Return exit code but don't fail the build
+                        )
+
+                        // Raporu JSON formatında al ve ekrana yazdır (tee komutu ile)
+                        sh "trivy image --format json ${dockerImageName} | tee trivy-report.json"
+
+                        if (scanExitCode != 0) {
+                            error("Trivy scan failed with exit code ${scanExitCode}")
+                        }
+
+                        // ----------- Push Docker image to registry ---------
+                        // There are two ways to push Docker images to Nexus:
+                        // 1. Using docker.withRegistry
+                        // 2. Using withCredentials and docker login
+                        // ---------------------------------------------------
+
+                        // docker.withRegistry("${params.NEXUS_DOCKER_REGISTRY}", "${params.NEXUS_CRED_ID}") {
+                        //     echo "Pushing Docker image ${dockerImageName} to Nexus"
+                        //     sh "docker image push ${dockerImageName}"
+                        // }
+ 
+                        withCredentials([usernamePassword(
+                            credentialsId: "${params.NEXUS_CRED_ID}", 
+                            usernameVariable: 'USERNAME', 
+                            passwordVariable: 'PASSWORD')]) {
+                            sh """
+                                # docker login -u $USERNAME -p $PASSWORD http://nexus:8081
+                                docker push ${dockerImageName}
+                            """
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Merge to Main') {
+            steps {
+                script {
+                    sh """
+                        git config --global user.email ""
+                        git config --global user.name "Jenkins"
+                        git checkout -b ${params.GIT_TARGET_BRANCH}
+                        git merge --no-ff ${params.GIT_SOURCE_BRANCH}
+                    """
+                }
+            }
+        }
+
+        stage("konteyneri temizle") {
+            steps {
+                cleanWs()
+            }
+        }
+    }
+    // Buraya tekrar bakılacak: https://www.jenkins.io/doc/book/pipeline/syntax/#post-conditions
+    post {
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed!'
+        }
+        always {
+            echo 'Cleaning up...'
+            // cleanWs()
+
+        // cleanWs(cleanWhenNotBuilt: false,
+        //         deleteDirs: true,
+        //         disableDeferredWipeout: true,
+        //         notFailBuild: true,
+        //         patterns: [[pattern: '.gitignore', type: 'INCLUDE'],
+        //                    [pattern: '.propsfile', type: 'EXCLUDE']])
+        }
+        unstable {
+            echo 'Pipeline is unstable!'
         }
     }
 }
