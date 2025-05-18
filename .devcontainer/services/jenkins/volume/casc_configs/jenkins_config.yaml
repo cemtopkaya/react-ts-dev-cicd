@@ -234,7 +234,7 @@ jobs:
                       // remote { url("https://github.com/cemtopkaya/react-ts-dev-cicd.git") }
                       remote { url("file:///tmp/code-repo") }
                       branches("main")
-                      scriptPath('./Jenkinsfile')
+                      scriptPath('./.jenkins/Jenkinsfile')
                       extensions {
                         cloneOptions {
                           timeout(10)
