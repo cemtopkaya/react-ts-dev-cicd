@@ -18,7 +18,7 @@ pipeline {
 
     parameters {
         separator(name: 'jenkinsfile_settings', sectionHeader: 'JENKINSFILE SETTTINGS')
-        boolean(name: 'DEBUG', defaultValue: false, description: 'Enable debug mode')
+        booleanParam(name: 'DEBUG', defaultValue: false, description: 'Enable debug mode')
 
         separator(name: 'git_settings', sectionHeader: 'GIT SETTTINGS')
         string(name: 'GIT_URL', defaultValue: 'file:///tmp/code-repo', description: 'Git URL')
