@@ -19,6 +19,7 @@ pipeline {
     parameters {
         separator(name: 'jenkinsfile_settings', sectionHeader: 'JENKINSFILE SETTTINGS')
         booleanParam(name: 'DEBUG', defaultValue: false, description: 'Enable debug mode')
+        booleanParam(name: 'SONARQUBE_SCAN', defaultValue: true, description: 'Enable SonarQube scan')
 
         separator(name: 'git_settings', sectionHeader: 'GIT SETTTINGS')
         string(name: 'GIT_URL', defaultValue: 'file:///tmp/code-repo', description: 'Git URL')
@@ -69,32 +70,28 @@ pipeline {
             steps {
                 script {
                     echo "Checking out from ${env.GIT_URL} on branch ${env.GIT_BRANCH}"
-
-                    // Option 1: Use the git step (simpler)
-                    if (params.GIT_CRED_ID?.trim()) {
-                        git(
+                    checkout([
+                        $class: 'GitSCM',
+                        branches: [[name: env.GIT_BRANCH]],
+                        extensions: [],
+                        userRemoteConfigs: [[
                             url: env.GIT_URL,
-                            branch: env.GIT_BRANCH,
-                            credentialsId: params.GIT_CRED_ID
-                        )
-                    } else {
-                        git(
-                            url: env.GIT_URL,
-                            branch: env.GIT_BRANCH
-                        )
-                    }
+                            credentialsId: params.GIT_CRED_ID ?: null
+                        ]]
+                    ])
                 }
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Install Package Dependencies') {
             steps {
                 script {
                     sh 'npm install'
                 }
             }
         }
-        stage('Build') {
+
+        stage('Build Project') {
             steps {
                 script {
                     sh 'npm run build'
@@ -103,6 +100,9 @@ pipeline {
         }
 
         stage('SonarQube scan') {
+            when {
+                expression { params.SONARQUBE_SCAN }
+            }
             steps {
                 script {
                     /*
@@ -120,6 +120,9 @@ pipeline {
         }
 
         stage('SonarQube Quality Gate') {
+            when {
+                expression { params.SONARQUBE_SCAN }
+            }
             steps {
                 script {
                     // Sonarqube quality gate kontrolü

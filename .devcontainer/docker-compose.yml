@@ -27,6 +27,7 @@ services:
         limits:
           # Sonar içinde Elasticsearch ve gömülü bir DB taşıdığı için büyük bir bellek ihtiyacı var
           memory: 4g
+          cpus: 2
     ports:
       - "34000:9000"
       - "39000:9000"
