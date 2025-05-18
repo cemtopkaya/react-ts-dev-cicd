@@ -1,0 +1,7 @@
+# https://trivy.dev/v0.47/docs/configuration/filtering/
+
+# CVE-2025-32414: libxml2 kütüphanesinde "Out-of-Bounds Read" güvenlik açığı (HIGH severity)
+CVE-2025-32414
+
+# CVE-2025-32415: libxml2 kütüphanesinde "Out-of-bounds Read in xmlSchemaIDCFillNodeTables" güvenlik açığı (HIGH severity)
+CVE-2025-32415

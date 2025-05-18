@@ -6,8 +6,13 @@ credentials:
           description: "jenkins sonar token"
           id: "jenkins-sonar"
           scope: GLOBAL
-          secret: "{AQAAABAAAAAwmHu7qhG8wnIzA9Sji8iPcf5JZBdOpFXRPwGh4cziJh3zm7fhBmEjXMoMR3TyKdEKM7L19TCc37iZEsJ+PYYmDg==}"
-
+          secret: "{AQAAABAAAABwPW4gD1QwQXprdbc1qOVyEDCVFx39gBwYaFfGF7FJbaGruKPPIFccCaiHUhxwXFdmyqcDb4PNaJMZXqvzOTgI/Dpo2qdTImherU52LxBajk7Pkz/FHYeJC6nlHblfw+xf2xmUZ/DsmCkaZHkiZIbvnNyi2Unbm4iHT1Cw/F0hIPM=}"
+      - usernamePassword:
+          description: "nexus için credential"
+          id: "nexus-cred"
+          password: "{AQAAABAAAAAQf+0csMoyBW/Lnrl5UhwyUN1cloCVH9NwjnvmKBTgXA4=}"
+          scope: GLOBAL
+          username: "cem"
 jenkins:
   systemMessage: "Jenkins is ready to use!"
   # Herhangi bir kullanıcı adı ve şifre olmadan erişim sağlayabilir
