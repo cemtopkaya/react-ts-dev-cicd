@@ -17,6 +17,9 @@ pipeline {
     }
 
     parameters {
+        separator(name: 'jenkinsfile_settings', sectionHeader: 'JENKINSFILE SETTTINGS')
+        boolean(name: 'DEBUG', defaultValue: false, description: 'Enable debug mode')
+
         separator(name: 'git_settings', sectionHeader: 'GIT SETTTINGS')
         string(name: 'GIT_URL', defaultValue: 'file:///tmp/code-repo', description: 'Git URL')
         // string(name: 'GIT_URL', defaultValue: 'https://github.com/cemtopkaya/react-ts-dev-cicd.git', description: 'Git URL')
@@ -39,7 +42,7 @@ pipeline {
         string(name: 'NEXUS_ARTIFACT_VERSION', defaultValue: '', description: 'Version of the artifact (e.g. 1.0.0). If not provided, it will be read from package.json')
 
         separator(name: 'nexus_settings', sectionHeader: 'NEXUS ZIP REPOSITORY SETTINGS')
-        string(name: 'NEXUS_REPO', defaultValue: '', description: 'Nexus repository (e.g., maven-releases or maven-snapshots)')
+        string(name: 'NEXUS_ZIP_REPO', defaultValue: '', description: 'Nexus repository (e.g., maven-releases or maven-snapshots)')
 
         separator(name: 'nexus_docker_settings', sectionHeader: 'NEXUS DDOCKER REGISTRY SETTINGS')
         string(name: 'NEXUS_DOCKER_REGISTRY', defaultValue: 'nexus:8081', description: 'Nexus docker registry URL')
@@ -170,46 +173,42 @@ pipeline {
             }
         }
 
-        stage('Zip and upload the artifact to Nexus') {
-            environment {
-                NEXUS_URL = "${params.NEXUS_URL}"
-                NEXUS_CRED_ID = "${params.NEXUS_CRED_ID}"
-                NEXUS_REPO = "${params.NEXUS_REPO}" // "maven-releases" veya "maven-snapshots" gibi
-                NEXUS_GROUP = "${params.NEXUS_GROUP}" // "com.example" gibi
-                NEXUS_ARTIFACT_ID = "${params.NEXUS_ARTIFACT_ID}" // "my-frontend" gibi
-                NEXUS_ARTIFACT_VERSION = "1.0.0" 
-            }
+        stage('Zip and Upload to Nexus') {
             steps {
                 script {
-                    // Zip the artifact
-                    sh """
-                        # dist/ dizinini ZIP'le
-                        zip -r ${NEXUS_ARTIFACT_ID}-${NEXUS_ARTIFACT_VERSION}.zip dist/
-                    """
+                    // ---------------------------------------------------
+                    // Zip the dist folder and upload to Nexus
+                    // ---------------------------------------------------
 
-                    // Push to Nexus
-                    nexusArtifactUploader(
-                        nexusVersion: 'nexus3',
-                        protocol: 'http',
-                        nexusUrl: "${params.NEXUS_URL}",
-                        groupId: "${params.NEXUS_GROUP}",
-                        version: version,
-                        repository: "${params.NEXUS_REPO}",
-                        credentialsId: "${params.NEXUS_CRED_ID}",
-                        artifacts: [
-                            [artifactId: "${params.NEXUS_ARTIFACT}",
-                            classifier: '',
-                            file: "${NEXUS_ARTIFACT_ID}-${NEXUS_ARTIFACT_VERSION}.zip",
-                            type: 'zip']
-                        ]
-                    )
+                    withCredentials([usernamePassword(
+                        credentialsId: params.NEXUS_CRED_ID,
+                        usernameVariable: 'nexusUser',
+                        passwordVariable: 'nexusPass'
+                    )]) {
+                        // properties içinde değer verilmemişse package.json'dan değerleri oku
+                        artifactId = params.NEXUS_ARTIFACT_ID ?: sh(script: 'jq -r .name package.json', returnStdout: true).trim()
+                        artifactVersion = params.NEXUS_ARTIFACT_VERSION ?: sh(script: 'jq -r .version package.json', returnStdout: true).trim()
+                        // groupPath = params.NEXUS_GROUP
+                        groupPath = params.NEXUS_GROUP.replace('.', '/')
+                        
+                        sh """
+                            if (${params.DEBUG.toBoolean()}) {
+                                printenv
+                                echo "Nexus URL: ${params.NEXUS_URL}"
+                                echo "Nexus ZIP Repository: ${params.NEXUS_ZIP_REPO}"
+                                echo "Nexus Group: ${groupPath}"
+                                echo "Artifact ID: ${artifactId}"
+                                echo "Artifact Version: ${artifactVersion}"
+                            }
 
-                    // sh '''
-                    //     # Nexus'a Maven formatında yükle
-                    //     curl -v -u ${NEXUS_USER}:${NEXUS_PASSWORD} \
-                    //         --upload-file ${ARTIFACT_ID}-${VERSION}.zip \
-                    //         "${NEXUS_URL}/repository/${REPO_NAME}/${GROUP_ID//.//}/${ARTIFACT_ID}/${VERSION}/${ARTIFACT_ID}-${VERSION}.zip"
-                    // '''
+                            zip -r ${artifactId}-${artifactVersion}.zip dist/
+
+                            # Upload to Nexus
+                            curl -v -u ${nexusUser}:${nexusPass} \\
+                                --upload-file ${artifactId}-${artifactVersion}.zip \\
+                                "${params.NEXUS_URL}/repository/${params.NEXUS_ZIP_REPO}/${groupPath}/${artifactId}/${artifactVersion}/${artifactId}-${artifactVersion}.zip"
+                        """
+                    }
                 }
             }
         }
@@ -252,7 +251,7 @@ pipeline {
                         // --no-progress: Ekranda gereksiz loading barı çıkmasın
                         // --exit-code 1: Eğer hata bulursa exit 1 yapar ve Jenkins stage'ı FAIL olsun
                         // -----------------------------------------------------
-                        
+
                         def scanExitCode = sh(
                             script: """
                                 trivy image \
