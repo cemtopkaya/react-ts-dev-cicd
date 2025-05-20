@@ -1,3 +1,8 @@
+# This file is used to define the services and networks for the development environment.
+x-common-env: &common-variables
+  # Containers will be setted to the same time zone as the host
+  TZ: "Europe/Istanbul"
+
 services:
   devcontainer:
     container_name: devcontainer
@@ -10,24 +15,27 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     command: sleep infinity
     environment:
-      - PYTHONPATH=/workspace
+      <<: *common-variables
+      PYTHONPATH: '/workspace'
     networks:
       - devnet
   
   sonar:
     container_name: sonar
-    image: sonarqube:community
+    # image: sonarqube:community
+    image: sonarqube:9-community
     environment:
-      - SONAR_SEARCH_JAVAOPTS=-Xms2g -Xmx4g
-    #   - SONAR_JDBC_URL=jdbc:postgresql://postgres:5432/sonar
-    #   - SONAR_JDBC_USERNAME=sonar
-    #   - SONAR_JDBC_PASSWORD=sonar
+      <<: *common-variables
+      SONAR_SEARCH_JAVAOPTS: -Xms2g -Xmx4g
+    # SONAR_JDBC_URL: jdbc:postgresql://postgres:5432/sonar
+    # SONAR_JDBC_USERNAME: sonar
+    # SONAR_JDBC_PASSWORD: sonar
     deploy:
       resources:
         limits:
           # Sonar içinde Elasticsearch ve gömülü bir DB taşıdığı için büyük bir bellek ihtiyacı var
-          memory: 4g
-          cpus: 2
+          memory: 6g
+          cpus: 6
     ports:
       - "34000:9000"
       - "39000:9000"
@@ -48,7 +56,7 @@ services:
       - "50000:50000"
       - "8888:8080"
     environment:
-      TZ: "Europe/Istanbul"
+      <<: *common-variables
       # -Xmx16g -Xms16g -Djava.io.tmpdir=/var/jenkins_home/tmp
       # https://www.jenkins.io/doc/book/installing/initial-settings/
       # - JAVA_OPTS=-Djenkins.install.runSetupWizard=false  # Kurulum sihirbazını atla (test için)
@@ -79,7 +87,8 @@ services:
     # volumes:
     #   - ./services/nexus/volume/data:/nexus-data
     environment:
-      - INSTALL4J_ADD_VM_PARAMS=-Xms1g -Xmx2g -XX:MaxDirectMemorySize=2g -Dapplication-host=0.0.0.0
+      <<: *common-variables
+      INSTALL4J_ADD_VM_PARAMS: -Xms1g -Xmx2g -XX:MaxDirectMemorySize=2g -Dapplication-host=0.0.0.0
     deploy:
       resources:
         limits:

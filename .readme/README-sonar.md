@@ -9,9 +9,25 @@ SonarQube, kod kalitesini analiz etmek ve iyileştirmek için kullanılan bir ar
 - Kod kalitesini artırmak
 - Potansiyel hataları ve güvenlik açıklarını tespit etmek
 - Kodun bakımını kolaylaştırmak
-- Test kapsamını izlemek
+- Test kapsamını izlemek (Test Coverage)
 
 amacıyla kullanılmaktadır.
+
+```mermaid
+sequenceDiagram
+    participant Developer
+    participant SonarScanner
+    participant SonarQube
+    
+    Developer->>SonarScanner: npx sonarqube-scanner
+    SonarScanner->>SonarQube: Aktif kuralları çek
+    SonarQube-->>SonarScanner: JavaScript kuralları (245 rule)
+    SonarScanner->>Proje: Kod analizi yap (AST)
+    SonarScanner->>Jest: coverage/lcov.info oku
+    SonarScanner->>SonarQube: Analiz sonuçlarını gönder
+    SonarQube-->>Developer: Dashboard'da rapor göster
+```
+
 
 ## 2. Ortam Değişkenleri Yapılandırması
 

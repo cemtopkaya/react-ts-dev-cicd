@@ -87,6 +87,8 @@ This dev container setup provides the following services via Docker Compose:
   - Example SonarLint server and project configuration is provided (commented out).
 - **Ports**: Forwards port `5173` for Vite development server.
 - **Workspace Mount**: The parent directory is mounted into `/workspace` inside the container.
+- **extensions**: Extensions can be installed by `devcontainer.json` online or offline. If the preferred way installing offline there will be needed to comment `devcontainer.json` file's extension lines (customization->vscode->extensions will run before the `postCreateCommand`). [This url](https://marketplace.visualstudio.com/_apis/public/gallery/publishers/GitHub/vsextensions/copilot/1.320.1565/vspackage
+) can be used to download the vsix file.
 
 ---
 

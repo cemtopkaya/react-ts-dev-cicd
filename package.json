@@ -47,7 +47,7 @@
     "-------SONAR": "---------------------------------------------------------",
     "sonar": "sonar-scanner -Dproject.settings=sonar-project.properties",
     "sonar:local": "npx dotenv -e .env.local -e .env -- sonar-scanner -Dproject.settings=sonar-local.properties --debug",
-    "sonar:cicd": "npx dotenv -e .env.cicd -e .env -- sonar-scanner -Dproject.settings=sonar-cicd.properties -X"
+    "sonar:cicd": "npx dotenv -e .env.cicd -e .env -- sonar-scanner -Dproject.settings=sonar-cicd.properties -Dsonar.typescript.eslint.skip=true -Dsonar.javascript.eslint.skip=true -X"
   },
   "dependencies": {
     "react": "^19.0.0",

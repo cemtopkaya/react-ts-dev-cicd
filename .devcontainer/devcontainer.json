@@ -7,29 +7,29 @@
   "runServices": [
     "devcontainer"
     ,"sonar"
-    ,"jenkins"
-    ,"nexus"
+    // ,"jenkins"
+    // ,"nexus"
   ],
   "workspaceFolder": "/workspace",
   "customizations": {
     "vscode": {
       "extensions": [
-        "dbaeumer.vscode-eslint",
-        "esbenp.prettier-vscode",
-        "dsznajder.es7-react-js-snippets",
-        "vitest.explorer",
-        "ritwickdey.LiveServer",
-        "MS-vsliveshare.vsliveshare",
-        "SonarSource.sonarlint-vscode",
-        "ms-playwright.playwright",
-        "ms-azuretools.vscode-docker",
-        "mushan.vscode-paste-image",
-        "NicolasVuillamy.vscode-groovy-lint"
+        // "dbaeumer.vscode-eslint",
+        // "esbenp.prettier-vscode",
+        // "dsznajder.es7-react-js-snippets",
+        // "vitest.explorer",
+        // "ritwickdey.LiveServer",
+        // "MS-vsliveshare.vsliveshare",
+        // "SonarSource.sonarlint-vscode",
+        // "ms-playwright.playwright",
+        // "ms-azuretools.vscode-docker",
+        // "mushan.vscode-paste-image",
+        // "NicolasVuillamy.vscode-groovy-lint"
       ],
       "settings": {
         "terminal.integrated.defaultProfile.linux": "bash",
         "editor.defaultFormatter": "esbenp.prettier-vscode",
-        "sonarlint.ls.javaHome": "/usr/lib/jvm/java-17-openjdk-arm64",
+        "sonarlint.ls.javaHome": "/usr/lib/jvm/java-17-openjdk-amd64/",
         // To analyze JavaScript, TypeScript, or CSS code, SonarQube for VS Code requires Node.js executable.
         "sonarlint.pathToNodeExecutable": "/usr/local/bin/node",
         // To analyze JavaScript, TypeScript, or CSS code, SonarLint for VS Code requires Node.js executable.
@@ -60,6 +60,8 @@
     // Forwards port 5173 for Vite development server.
     "forwardPorts": [
       5173
-    ]
+    ],
+    "postStartCommand": "./postCreate.sh"
+    // postStartCommand to ensure the script only runs once after container creation
   }
 }
