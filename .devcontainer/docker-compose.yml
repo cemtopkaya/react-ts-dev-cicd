@@ -24,6 +24,7 @@ services:
     container_name: sonar
     # image: sonarqube:community
     image: sonarqube:9-community
+    platform: linux/amd64
     environment:
       <<: *common-variables
       SONAR_SEARCH_JAVAOPTS: -Xms2g -Xmx4g

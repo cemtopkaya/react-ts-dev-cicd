@@ -6,8 +6,8 @@
   "service": "devcontainer",
   "runServices": [
     "devcontainer"
-    ,"sonar"
-    // ,"jenkins"
+    // ,"sonar"
+    ,"jenkins"
     // ,"nexus"
   ],
   "workspaceFolder": "/workspace",
