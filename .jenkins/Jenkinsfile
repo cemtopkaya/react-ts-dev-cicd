@@ -99,6 +99,14 @@ pipeline {
             }
         }
 
+        stage('Run Tests') {
+            steps {
+                script {
+                    sh 'npm run test:run:coverage'
+                }
+            }
+        }
+        
         stage('SonarQube scan') {
             when {
                 expression { params.SONARQUBE_SCAN }
@@ -161,13 +169,6 @@ pipeline {
             }
         }
 
-        stage('Run Tests') {
-            steps {
-                script {
-                    sh 'npm run test:run:coverage'
-                }
-            }
-        }
         stage('Coverage Check') {
             steps {
                 script {

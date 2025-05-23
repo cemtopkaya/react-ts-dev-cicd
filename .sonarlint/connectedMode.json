@@ -1,4 +1,4 @@
 {
-    "sonarQubeUri": "http://sonar:9000",
-    "projectKey": "react-diff"
+    "sonarQubeUri": "https://sonar.telenity.com",
+    "projectKey": "React-Admin-Portal"
 }
